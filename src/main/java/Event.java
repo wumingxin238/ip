@@ -15,12 +15,12 @@ class Event extends Task {
     }
 
     @Override
-    public String getType() {
-        return "E";
+    public TaskType getType() {
+        return TaskType.EVENT;
     }
 
     @Override
     public String toString() {
-        return "[" + getType() + "][" + getStatusIcon() + "] " + description + " (from: " + from + " to: " + to + ")";
+        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description + " (from: " + from + " to: " + to + ")";
     }
 }

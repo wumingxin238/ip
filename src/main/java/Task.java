@@ -22,10 +22,11 @@ abstract class Task {
         return (isDone ? "X" : " ");
     }
 
-    public abstract String getType();
+    // Return the enum instead of a string
+    public abstract TaskType getType();
 
     @Override
     public String toString() {
-        return "[" + getType() + "][" + getStatusIcon() + "] " + description;
+        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description;
     }
 }

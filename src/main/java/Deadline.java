@@ -10,12 +10,12 @@ class Deadline extends Task {
     }
 
     @Override
-    public String getType() {
-        return "D";
+    public TaskType getType() {
+        return TaskType.DEADLINE;
     }
 
     @Override
     public String toString() {
-        return "[" + getType() + "][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
+        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
     }
 }
