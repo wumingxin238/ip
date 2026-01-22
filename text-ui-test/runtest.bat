@@ -1,21 +1,29 @@
-@ECHO OFF
+@echo off
+setlocal
 
-REM create bin directory if it doesn't exist
-if not exist ..\bin mkdir ..\bin
-
-REM delete output from previous run
-if exist ACTUAL.TXT del ACTUAL.TXT
-
-REM compile the code into the bin folder
-javac  -cp ..\src\main\java -Xlint:none -d ..\bin ..\src\main\java\*.java
-IF ERRORLEVEL 1 (
-    echo ********** BUILD FAILURE **********
+REM Compile the program
+cd ..
+call compile.bat
+if errorlevel 1 (
+    echo Compilation failed!
     exit /b 1
 )
-REM no error here, errorlevel == 0
+cd text-ui-test
 
-REM run the program, feed commands from input.txt file and redirect the output to the ACTUAL.TXT
-java -classpath ..\bin Duke < input.txt > ACTUAL.TXT
+REM Run test
+set TEST_NAME=SampleTest
+java -cp ../classes Cherish < input/%TEST_NAME%.txt > actual/%TEST_NAME%.txt
 
-REM compare the output to the expected output
-FC ACTUAL.TXT EXPECTED.TXT
+REM Compare outputs
+fc expected/%TEST_NAME%.txt actual/%TEST_NAME%.txt > nul
+if errorlevel 1 (
+    echo.
+    echo TEST FAILED!
+    echo Differences found between expected and actual output.
+    echo Run: fc expected/%TEST_NAME%.txt actual/%TEST_NAME%.txt
+) else (
+    echo.
+    echo ALL TESTS PASSED!
+)
+
+pause
