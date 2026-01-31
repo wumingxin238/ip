@@ -6,10 +6,21 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Represents a Deadline task in the Cherish application.
+ * A Deadline has a description and a specific date and time by which it must be completed.
+ */
 public class Deadline extends Task {
     protected LocalDateTime by;
 
-    // Constructor for user input (parses string)
+    /**
+     * Constructs a Deadline task from a description string and a date/time string.
+     * This constructor is typically used when parsing user input.
+     *
+     * @param description The description of the deadline task.
+     * @param byStr The deadline date and time string in the format "yyyy-MM-dd HHmm".
+     * @throws CherishException If the date/time string is in an invalid format.
+     */
     public Deadline(String description, String byStr) throws CherishException {
         super(description);
         try {
@@ -19,7 +30,14 @@ public class Deadline extends Task {
         }
     }
 
-    // Constructor for loading from file (uses stored string)
+    /**
+     * Constructs a Deadline task from a description string and a LocalDateTime object.
+     * This constructor is typically used when loading tasks from a file.
+     *
+     * @param description The description of the deadline task.
+     * @param by The LocalDateTime object representing the deadline.
+     * @throws CherishException If any required parameters are missing or invalid (not applicable here).
+     */
     public Deadline(String description, LocalDateTime by) throws CherishException {
         super(description);
         this.by = by;
@@ -42,6 +60,11 @@ public class Deadline extends Task {
         return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + savedDate;
     }
 
+    /**
+     * Gets the deadline date and time.
+     *
+     * @return The LocalDateTime object representing the deadline.
+     */
     public LocalDateTime getBy() {
         return by;
     }

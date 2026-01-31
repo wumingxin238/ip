@@ -6,9 +6,18 @@ import cherish.model.Task;
 import cherish.model.TaskList;
 import cherish.ui.Ui;
 
+/**
+ * Command to mark a task as not completed based on its index in the task list.
+ * Validates the index and checks if the task is already unmarked.
+ */
 public class UnmarkCommand extends Command {
     private int index;
 
+    /**
+     * Constructs an UnmarkCommand with the specified task index.
+     *
+     * @param index The zero-based index of the task to be marked as not done.
+     */
     public UnmarkCommand(int index) {
         this.index = index;
     }

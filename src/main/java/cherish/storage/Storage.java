@@ -12,15 +12,31 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Handles reading from and writing to the task storage file.
+ * Ensures the data directory exists and manages the persistence of the task list.
+ */
 public class Storage {
     private String filePath;
     private static final DateTimeFormatter SAVE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
+    /**
+     * Constructs a Storage object with the path to the data file.
+     *
+     * @param filePath The path to the file where tasks will be saved and loaded from.
+     */
     public Storage(String filePath) {
         this.filePath = filePath;
     }
 
-    // Load tasks from file
+    /**
+     * Loads the list of tasks from the storage file.
+     * Creates the data directory if it doesn't exist.
+     * Returns an empty array if the file does not exist.
+     *
+     * @return An array of Task objects loaded from the file.
+     * @throws CherishException If there is an error creating the directory or reading the file.
+     */
     public Task[] load() throws CherishException {
         Path dataDir = Paths.get("data");
         Path file = Paths.get(filePath);
@@ -50,7 +66,12 @@ public class Storage {
         }
     }
 
-    // Save tasks to file
+    /**
+     * Saves the current list of tasks to the storage file, overwriting its contents.
+     *
+     * @param tasks An array of Task objects to be saved.
+     * @throws CherishException If there is an error writing to the file.
+     */
     public void save(Task[] tasks) throws CherishException {
         Path file = Paths.get(filePath);
         try (BufferedWriter writer = Files.newBufferedWriter(file)) {
@@ -63,9 +84,16 @@ public class Storage {
         }
     }
 
-    // Helper: parse a single line into a Task
+    /**
+     * Parses a single line from the storage file into a Task object.
+     * The line is expected to be in the format: TYPE | DONE_STATUS | DESCRIPTION [| additional fields...]
+     *
+     * @param line The line from the file to be parsed.
+     * @return A Task object (Todo, Deadline, or Event) corresponding to the line.
+     * @throws CherishException If the line format is invalid or contains corrupted data.
+     */
     private Task parseTask(String line) throws CherishException {
-        String[] parts = line.split(" \\| ", -1);
+        String[] parts = line.split(" \\| ", -1); // Use -1 to keep empty trailing parts if any
         if (parts.length < 3) {
             throw new CherishException("Corrupted data format");
         }

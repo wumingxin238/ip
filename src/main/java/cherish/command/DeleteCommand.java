@@ -6,9 +6,18 @@ import cherish.model.Task;
 import cherish.model.TaskList;
 import cherish.ui.Ui;
 
+/**
+ * Command to delete a task from the task list by its index.
+ * Validates the index before attempting to remove the task.
+ */
 public class DeleteCommand extends Command {
     private int index;
 
+    /**
+     * Constructs a DeleteCommand with the specified task index.
+     *
+     * @param index The zero-based index of the task to be deleted.
+     */
     public DeleteCommand(int index) {
         this.index = index;
     }

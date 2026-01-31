@@ -9,17 +9,30 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Locale;
 
+/**
+ * Manages a list of tasks in the Cherish application.
+ * Provides methods for adding, retrieving, removing, and marking tasks,
+ * as well as finding tasks by date and generating display strings.
+ */
 public class TaskList {
     private ArrayList<Task> tasks;
     // The formatter is correctly set with Locale.ENGLISH
     public static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd yyyy HHmm", Locale.ENGLISH);
 
+    /**
+     * Constructs an empty TaskList.
+     */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
 
-    // Constructor for loading from Storage
+    /**
+     * Constructs a TaskList from an existing array of tasks.
+     * Used primarily when loading tasks from storage.
+     *
+     * @param loadedTasks An array of Task objects to initialize the list with.
+     */
     public TaskList(Task[] loadedTasks) {
         this();
         if (loadedTasks != null) {
@@ -31,31 +44,70 @@ public class TaskList {
         }
     }
 
+    /**
+     * Adds a new task to the end of the list.
+     *
+     * @param task The Task object to add.
+     */
     public void add(Task task) {
         tasks.add(task);
     }
 
+    /**
+     * Retrieves the task at the specified index.
+     *
+     * @param index The zero-based index of the task to retrieve.
+     * @return The Task object at the specified index.
+     */
     public Task get(int index) {
         return tasks.get(index);
     }
 
+    /**
+     * Gets the number of tasks in the list.
+     *
+     * @return The current size of the task list.
+     */
     public int size() {
         return tasks.size();
     }
 
+    /**
+     * Removes the task at the specified index.
+     *
+     * @param index The zero-based index of the task to remove.
+     */
     public void remove(int index) {
         tasks.remove(index);
     }
 
+    /**
+     * Marks the task at the specified index as done.
+     *
+     * @param index The zero-based index of the task to mark.
+     */
     public void markAsDone(int index) {
         tasks.get(index).markAsDone();
     }
 
+    /**
+     * Marks the task at the specified index as not done.
+     *
+     * @param index The zero-based index of the task to mark.
+     */
     public void markAsNotDone(int index) {
         tasks.get(index).markAsNotDone();
     }
 
     // helper method to find tasks occurring on a given date
+    /**
+     * Finds and returns a string listing all tasks (Deadlines and Events) that occur on a specific date.
+     * For Events, it includes those that span the target date.
+     *
+     * @param dateString The date string in the format "yyyy-MM-dd" (e.g., "2026-02-01").
+     * @return A formatted string listing the matching tasks, or a message indicating none were found.
+     * @throws CherishException If the provided date string is in an invalid format.
+     */
     public String findTasksOnDate(String dateString) throws CherishException {
         LocalDate targetDate;
         try {
@@ -101,11 +153,21 @@ public class TaskList {
     }
 
     // For saving: convert to array
+    /**
+     * Converts the internal list of tasks into an array.
+     *
+     * @return An array of Task objects.
+     */
     public Task[] toArray() {
         return tasks.toArray(new Task[0]);
     }
 
     // For display
+    /**
+     * Generates a formatted string representation of the entire task list for display purposes.
+     *
+     * @return A string listing all tasks with their indices, or a message if the list is empty.
+     */
     public String getListString() {
         if (tasks.isEmpty()) {
             return "Your task list is empty! Add some tasks with 'todo', 'deadline', or 'event'.";
