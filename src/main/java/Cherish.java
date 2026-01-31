@@ -5,12 +5,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class Cherish {
     private static final String DATA_DIR = "data";
     private static final String DATA_FILE = "cherish.txt";
     private static final String FILE_PATH = DATA_DIR + File.separator + DATA_FILE;
+
+    // Formatters
+    private static final DateTimeFormatter SAVE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
 
     private static Task[] tasks = new Task[100];
     private static int taskCount = 0;
@@ -33,26 +40,28 @@ public class Cherish {
                     ch.printTaskList();
                 } else if (input.startsWith("mark ")) {
                     ch.handleMarkCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
                 } else if (input.startsWith("unmark ")) {
                     ch.handleUnmarkCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
                 } else if (input.startsWith("delete ")) {
                     ch.handleDeleteCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
                 } else if (input.startsWith("todo ")) {
                     ch.handleTodoCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
                 } else if (input.startsWith("deadline ")) {
                     ch.handleDeadlineCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
                 } else if (input.startsWith("event ")) {
                     ch.handleEventCommand(input);
-                    ch.saveTasksToFile(); // Auto-save after change
+                    ch.saveTasksToFile();
+                } else if (input.startsWith("finddate ")) {
+                    ch.handleFindDateCommand(input);
                 } else if (input.trim().isEmpty()) {
                     System.out.println("Hmm... you didn't type anything! Try a command like 'todo read book'.\n");
                 } else {
-                    System.out.println("I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'mark', 'unmark', or 'delete'.\n");
+                    System.out.println("I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'mark', 'unmark', 'delete', or 'finddate'.\n");
                 }
             } catch (CherishException e) {
                 System.out.println("Oops! " + e.getMessage() + "\n");
@@ -90,28 +99,24 @@ public class Cherish {
         }
     }
 
-    /**
-     * Loads tasks from file on startup.
-     * Handles missing directory/file gracefully.
-     */
+    // ==================== FILE PERSISTENCE METHODS ====================
+
     private void loadTasksFromFile() {
         Path dataDir = Paths.get(DATA_DIR);
         Path filePath = Paths.get(FILE_PATH);
 
-        // Create data directory if it doesn't exist
         if (!Files.exists(dataDir)) {
             try {
                 Files.createDirectories(dataDir);
-                return; // No file to load yet
+                return;
             } catch (IOException e) {
                 System.out.println("Warning: Could not create data directory. Tasks will not be saved.\n");
                 return;
             }
         }
 
-        // Load tasks if file exists
         if (!Files.exists(filePath)) {
-            return; // First run - no data to load
+            return;
         }
 
         try (BufferedReader reader = Files.newBufferedReader(filePath)) {
@@ -127,11 +132,8 @@ public class Cherish {
         }
     }
 
-    /**
-     * Parses a single line from the data file and adds the task to memory.
-     */
     private void parseAndAddTask(String line) throws CherishException {
-        String[] parts = line.split(" \\| ", -1); // -1 to keep trailing empty strings
+        String[] parts = line.split(" \\| ", -1);
 
         if (parts.length < 3) {
             throw new CherishException("Corrupted data format");
@@ -157,11 +159,16 @@ public class Cherish {
                     if (parts.length < 4) {
                         throw new CherishException("Corrupted deadline data");
                     }
-                    String by = parts[3];
-                    if (taskCount < tasks.length) {
-                        tasks[taskCount] = new Deadline(description, by);
-                        if (isDone) tasks[taskCount].markAsDone();
-                        taskCount++;
+                    String byStr = parts[3];
+                    try {
+                        LocalDateTime by = LocalDateTime.parse(byStr, SAVE_FORMATTER);
+                        if (taskCount < tasks.length) {
+                            tasks[taskCount] = new Deadline(description, by);
+                            if (isDone) tasks[taskCount].markAsDone();
+                            taskCount++;
+                        }
+                    } catch (DateTimeParseException e) {
+                        throw new CherishException("Invalid date in deadline data");
                     }
                     break;
 
@@ -169,12 +176,18 @@ public class Cherish {
                     if (parts.length < 5) {
                         throw new CherishException("Corrupted event data");
                     }
-                    String from = parts[3];
-                    String to = parts[4];
-                    if (taskCount < tasks.length) {
-                        tasks[taskCount] = new Event(description, from, to);
-                        if (isDone) tasks[taskCount].markAsDone();
-                        taskCount++;
+                    String fromStr = parts[3];
+                    String toStr = parts[4];
+                    try {
+                        LocalDateTime from = LocalDateTime.parse(fromStr, SAVE_FORMATTER);
+                        LocalDateTime to = LocalDateTime.parse(toStr, SAVE_FORMATTER);
+                        if (taskCount < tasks.length) {
+                            tasks[taskCount] = new Event(description, from, to);
+                            if (isDone) tasks[taskCount].markAsDone();
+                            taskCount++;
+                        }
+                    } catch (DateTimeParseException e) {
+                        throw new CherishException("Invalid date in event data");
                     }
                     break;
             }
@@ -183,14 +196,10 @@ public class Cherish {
         }
     }
 
-    /**
-     * Saves all tasks to file automatically after any change.
-     */
     private void saveTasksToFile() {
         Path dataDir = Paths.get(DATA_DIR);
         Path filePath = Paths.get(FILE_PATH);
 
-        // Ensure data directory exists
         if (!Files.exists(dataDir)) {
             try {
                 Files.createDirectories(dataDir);
@@ -207,6 +216,55 @@ public class Cherish {
             }
         } catch (IOException e) {
             System.out.println("Warning: Failed to save tasks to file.\n");
+        }
+    }
+
+    // ==================== FIND DATE COMMAND ====================
+
+    private void handleFindDateCommand(String input) throws CherishException {
+        String dateStr = input.substring(9).trim();
+        if (dateStr.isEmpty()) {
+            throw new CherishException("Please specify a date to search! Usage: finddate yyyy-MM-dd");
+        }
+
+        LocalDateTime targetDate;
+        try {
+            // Parse as date-only (assume time 00:00)
+            targetDate = LocalDateTime.parse(dateStr + " 0000", SAVE_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new CherishException("Invalid date format! Please use 'yyyy-MM-dd' (e.g., 2019-12-02).");
+        }
+
+        // Find matching tasks
+        java.util.ArrayList<Task> matchingTasks = new java.util.ArrayList<>();
+        for (int i = 0; i < taskCount; i++) {
+            Task task = tasks[i];
+            if (task instanceof Deadline) {
+                Deadline d = (Deadline) task;
+                if (d.getBy().toLocalDate().equals(targetDate.toLocalDate())) {
+                    matchingTasks.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event e = (Event) task;
+                // Check if event occurs on the target date (overlaps)
+                if (!e.getFrom().toLocalDate().isAfter(targetDate.toLocalDate()) &&
+                        !e.getTo().toLocalDate().isBefore(targetDate.toLocalDate())) {
+                    matchingTasks.add(task);
+                }
+            }
+        }
+
+        // Display results
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No deadlines or events found for " +
+                    targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy")) + ".\n");
+        } else {
+            System.out.println("Here are the deadlines/events on " +
+                    targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy")) + ":");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + "." + matchingTasks.get(i));
+            }
+            System.out.println();
         }
     }
 
@@ -227,7 +285,7 @@ public class Cherish {
     private void handleDeadlineCommand(String input) throws CherishException {
         String[] parts = input.split(" /by ", 2);
         if (parts.length != 2) {
-            throw new CherishException("Invalid deadline format! Please use: 'deadline DESCRIPTION /by DEADLINE'");
+            throw new CherishException("Invalid deadline format! Please use: 'deadline DESCRIPTION /by yyyy-MM-dd HHmm'");
         }
         String description = parts[0].substring(9).trim();
         String by = parts[1].trim();
@@ -245,12 +303,12 @@ public class Cherish {
     private void handleEventCommand(String input) throws CherishException {
         String[] parts = input.split(" /from ", 2);
         if (parts.length != 2) {
-            throw new CherishException("Invalid event format! Please use: 'event DESCRIPTION /from START /to END'");
+            throw new CherishException("Invalid event format! Please use: 'event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm'");
         }
         String description = parts[0].substring(6).trim();
         String[] fromTo = parts[1].split(" /to ", 2);
         if (fromTo.length != 2) {
-            throw new CherishException("Invalid event format! Please use: 'event DESCRIPTION /from START /to END'");
+            throw new CherishException("Invalid event format! Please use: 'event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm'");
         }
         String from = fromTo[0].trim();
         String to = fromTo[1].trim();
@@ -295,11 +353,10 @@ public class Cherish {
         int index = getValidTaskIndex(input, "delete");
         Task deletedTask = tasks[index];
 
-        // Shift remaining tasks left
         for (int i = index; i < taskCount - 1; i++) {
             tasks[i] = tasks[i + 1];
         }
-        tasks[taskCount - 1] = null; // Clear last reference
+        tasks[taskCount - 1] = null;
         taskCount--;
 
         System.out.println("Noted! I've removed this task:");
