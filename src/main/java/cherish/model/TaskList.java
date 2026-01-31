@@ -1,3 +1,4 @@
+// src/main/java/cherish/model/TaskList.java
 package cherish.model;
 
 import cherish.CherishException;
@@ -6,9 +7,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class TaskList {
     private ArrayList<Task> tasks;
+    // The formatter is correctly set with Locale.ENGLISH
+    public static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd yyyy HHmm", Locale.ENGLISH);
 
     public TaskList() {
         this.tasks = new ArrayList<>();
@@ -86,7 +91,6 @@ public class TaskList {
                     result.append(++count).append(".").append(task).append("\n");
                 }
             }
-            // Todo has no date → skip
         }
 
         if (!found) {
