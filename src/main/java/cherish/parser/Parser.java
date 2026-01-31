@@ -1,3 +1,8 @@
+package cherish.parser;
+
+import cherish.CherishException;
+import cherish.command.*;
+
 public class Parser {
 
     public static Command parse(String fullCommand) throws CherishException {

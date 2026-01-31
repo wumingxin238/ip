@@ -1,8 +1,12 @@
+package cherish.model;
+
+import cherish.CherishException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-class Deadline extends Task {
+public class Deadline extends Task {
     protected LocalDateTime by;
 
     // Constructor for user input (parses string)

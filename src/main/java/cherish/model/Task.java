@@ -1,4 +1,8 @@
-abstract class Task {
+package cherish.model;
+
+import cherish.CherishException;
+
+public abstract class Task {
     protected String description;
     protected boolean isDone;
 

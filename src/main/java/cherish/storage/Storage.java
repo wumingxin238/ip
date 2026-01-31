@@ -1,3 +1,8 @@
+package cherish.storage;
+
+import cherish.*;
+import cherish.model.*;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;

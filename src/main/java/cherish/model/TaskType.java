@@ -1,3 +1,7 @@
+package cherish.model;
+
+import cherish.CherishException;
+
 public enum TaskType {
     TODO("T"),
     DEADLINE("D"),

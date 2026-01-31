@@ -1,3 +1,11 @@
+package cherish.command;
+
+import cherish.CherishException;
+import cherish.storage.Storage;
+import cherish.model.Task;
+import cherish.model.TaskList;
+import cherish.ui.Ui;
+
 public class DeleteCommand extends Command {
     private int index;
 

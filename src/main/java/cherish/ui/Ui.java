@@ -1,3 +1,5 @@
+package cherish.ui;
+
 import java.util.Scanner;
 
 public class Ui {

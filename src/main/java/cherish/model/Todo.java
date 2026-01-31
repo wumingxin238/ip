@@ -1,4 +1,8 @@
-class Todo extends Task {
+package cherish.model;
+
+import cherish.CherishException;
+
+public class Todo extends Task {
     public Todo(String description) throws CherishException {
         super(description);
     }
