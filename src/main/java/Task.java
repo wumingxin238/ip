@@ -22,6 +22,10 @@ abstract class Task {
         return (isDone ? "X" : " ");
     }
 
+    public boolean isDone() {
+        return isDone;
+    }
+
     // For saving to file
     public abstract String toFileString();
 
@@ -32,4 +36,5 @@ abstract class Task {
     public String toString() {
         return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description;
     }
+
 }
