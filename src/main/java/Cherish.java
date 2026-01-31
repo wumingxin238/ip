@@ -1,12 +1,26 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class Cherish {
+    private static final String DATA_DIR = "data";
+    private static final String DATA_FILE = "cherish.txt";
+    private static final String FILE_PATH = DATA_DIR + File.separator + DATA_FILE;
+
     private static Task[] tasks = new Task[100];
     private static int taskCount = 0;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Cherish ch = new Cherish();
+
+        // Load existing tasks on startup
+        ch.loadTasksFromFile();
         ch.greet();
 
         while (true) {
@@ -19,16 +33,22 @@ public class Cherish {
                     ch.printTaskList();
                 } else if (input.startsWith("mark ")) {
                     ch.handleMarkCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.startsWith("unmark ")) {
                     ch.handleUnmarkCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.startsWith("delete ")) {
                     ch.handleDeleteCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.startsWith("todo ")) {
                     ch.handleTodoCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.startsWith("deadline ")) {
                     ch.handleDeadlineCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.startsWith("event ")) {
                     ch.handleEventCommand(input);
+                    ch.saveTasksToFile(); // Auto-save after change
                 } else if (input.trim().isEmpty()) {
                     System.out.println("Hmm... you didn't type anything! Try a command like 'todo read book'.\n");
                 } else {
@@ -69,6 +89,128 @@ public class Cherish {
             throw new CherishException("Invalid task number! Please enter a valid number after '" + commandName + "' (e.g., '" + commandName + " 1').");
         }
     }
+
+    /**
+     * Loads tasks from file on startup.
+     * Handles missing directory/file gracefully.
+     */
+    private void loadTasksFromFile() {
+        Path dataDir = Paths.get(DATA_DIR);
+        Path filePath = Paths.get(FILE_PATH);
+
+        // Create data directory if it doesn't exist
+        if (!Files.exists(dataDir)) {
+            try {
+                Files.createDirectories(dataDir);
+                return; // No file to load yet
+            } catch (IOException e) {
+                System.out.println("Warning: Could not create data directory. Tasks will not be saved.\n");
+                return;
+            }
+        }
+
+        // Load tasks if file exists
+        if (!Files.exists(filePath)) {
+            return; // First run - no data to load
+        }
+
+        try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                parseAndAddTask(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Warning: Could not read task data file. Starting with empty list.\n");
+        } catch (CherishException e) {
+            System.out.println("Warning: Corrupted data in file. Starting with empty list.\n");
+        }
+    }
+
+    /**
+     * Parses a single line from the data file and adds the task to memory.
+     */
+    private void parseAndAddTask(String line) throws CherishException {
+        String[] parts = line.split(" \\| ", -1); // -1 to keep trailing empty strings
+
+        if (parts.length < 3) {
+            throw new CherishException("Corrupted data format");
+        }
+
+        String typeSymbol = parts[0];
+        boolean isDone = "1".equals(parts[1]);
+        String description = parts[2];
+
+        try {
+            TaskType type = TaskType.fromSymbol(typeSymbol);
+
+            switch (type) {
+                case TODO:
+                    if (taskCount < tasks.length) {
+                        tasks[taskCount] = new Todo(description);
+                        if (isDone) tasks[taskCount].markAsDone();
+                        taskCount++;
+                    }
+                    break;
+
+                case DEADLINE:
+                    if (parts.length < 4) {
+                        throw new CherishException("Corrupted deadline data");
+                    }
+                    String by = parts[3];
+                    if (taskCount < tasks.length) {
+                        tasks[taskCount] = new Deadline(description, by);
+                        if (isDone) tasks[taskCount].markAsDone();
+                        taskCount++;
+                    }
+                    break;
+
+                case EVENT:
+                    if (parts.length < 5) {
+                        throw new CherishException("Corrupted event data");
+                    }
+                    String from = parts[3];
+                    String to = parts[4];
+                    if (taskCount < tasks.length) {
+                        tasks[taskCount] = new Event(description, from, to);
+                        if (isDone) tasks[taskCount].markAsDone();
+                        taskCount++;
+                    }
+                    break;
+            }
+        } catch (IllegalArgumentException e) {
+            throw new CherishException("Unknown task type in data file");
+        }
+    }
+
+    /**
+     * Saves all tasks to file automatically after any change.
+     */
+    private void saveTasksToFile() {
+        Path dataDir = Paths.get(DATA_DIR);
+        Path filePath = Paths.get(FILE_PATH);
+
+        // Ensure data directory exists
+        if (!Files.exists(dataDir)) {
+            try {
+                Files.createDirectories(dataDir);
+            } catch (IOException e) {
+                System.out.println("Warning: Could not create data directory. Tasks not saved.\n");
+                return;
+            }
+        }
+
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            for (int i = 0; i < taskCount; i++) {
+                writer.write(tasks[i].toFileString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Warning: Failed to save tasks to file.\n");
+        }
+    }
+
+    // ==================== COMMAND HANDLERS ====================
 
     private void handleTodoCommand(String input) throws CherishException {
         String description = input.substring(5).trim();
@@ -164,5 +306,4 @@ public class Cherish {
         System.out.println("  " + deletedTask);
         System.out.println("Now you have " + taskCount + (taskCount == 1 ? " task" : " tasks") + " in your list.\n");
     }
-    
 }

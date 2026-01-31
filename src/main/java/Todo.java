@@ -7,4 +7,9 @@ class Todo extends Task {
     public TaskType getType() {
         return TaskType.TODO;
     }
+
+    @Override
+    public String toFileString() {
+        return "T | " + (isDone ? "1" : "0") + " | " + description;
+    }
 }

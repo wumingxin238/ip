@@ -22,6 +22,9 @@ abstract class Task {
         return (isDone ? "X" : " ");
     }
 
+    // For saving to file
+    public abstract String toFileString();
+
     // Return the enum instead of a string
     public abstract TaskType getType();
 
