@@ -1,12 +1,24 @@
-class Deadline extends Task {
-    protected String by;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
-    public Deadline(String description, String by) throws CherishException {
+class Deadline extends Task {
+    protected LocalDateTime by;
+
+    // Constructor for user input (parses string)
+    public Deadline(String description, String byStr) throws CherishException {
         super(description);
-        if (by == null || by.trim().isEmpty()) {
-            throw new CherishException("Deadline time cannot be empty! Please specify when the task is due using '/by TIME'.");
+        try {
+            this.by = LocalDateTime.parse(byStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+        } catch (DateTimeParseException e) {
+            throw new CherishException("Invalid date/time format! Please use 'yyyy-MM-dd HHmm' (e.g., 2019-12-02 1800).");
         }
-        this.by = by.trim();
+    }
+
+    // Constructor for loading from file (uses stored string)
+    public Deadline(String description, LocalDateTime by) throws CherishException {
+        super(description);
+        this.by = by;
     }
 
     @Override
@@ -16,11 +28,17 @@ class Deadline extends Task {
 
     @Override
     public String toString() {
-        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
+        String formattedDate = by.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"));
+        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description + " (by: " + formattedDate + ")";
     }
 
     @Override
     public String toFileString() {
-        return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
+        String savedDate = by.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
+        return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + savedDate;
+    }
+
+    public LocalDateTime getBy() {
+        return by;
     }
 }
