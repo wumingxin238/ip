@@ -1,3 +1,4 @@
+// src/main/java/cherish/parser/Parser.java
 package cherish.parser;
 
 import cherish.CherishException;
@@ -44,12 +45,16 @@ public class Parser {
             return parseDeadline(input);
         } else if (input.startsWith("event ")) {
             return parseEvent(input);
-        } else if (input.startsWith("finddate ")) {
+        } else if (input.startsWith("finddate ")) { // Existing command
             String dateStr = input.substring(9).trim();
             if (dateStr.isEmpty()) throw new CherishException("Please specify a date! Usage: finddate yyyy-MM-dd");
             return new FindDateCommand(dateStr);
+        } else if (input.startsWith("find ")) { // New command
+            String keyword = input.substring(5).trim(); // Extract the keyword after "find "
+            if (keyword.isEmpty()) throw new CherishException("Please specify a keyword to search for! Usage: find KEYWORD");
+            return new FindCommand(keyword);
         } else {
-            throw new CherishException("I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', etc.");
+            throw new CherishException("I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'find', etc.");
         }
     }
 
@@ -85,7 +90,7 @@ public class Parser {
         if (parts.length != 2) {
             throw new CherishException("Invalid deadline format! Use: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
         }
-        String desc = parts[0].substring(9).trim();
+        String desc = parts[0].substring(9).trim(); // Remove "deadline " part
         String by = parts[1].trim();
         if (desc.isEmpty() || by.isEmpty()) {
             throw new CherishException("Deadline description and time cannot be empty.");
@@ -106,7 +111,7 @@ public class Parser {
         if (parts.length != 2) {
             throw new CherishException("Invalid event format! Use: event DESC /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM");
         }
-        String desc = parts[0].substring(6).trim();
+        String desc = parts[0].substring(6).trim(); // Remove "event " part
         String[] fromTo = parts[1].split(" /to ", 2);
         if (fromTo.length != 2) {
             throw new CherishException("Invalid event format! Missing '/to'.");

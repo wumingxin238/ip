@@ -99,7 +99,7 @@ public class TaskList {
         tasks.get(index).markAsNotDone();
     }
 
-    // helper method to find tasks occurring on a given date
+    // Helper method to find tasks occurring on a given date
     /**
      * Finds and returns a string listing all tasks (Deadlines and Events) that occur on a specific date.
      * For Events, it includes those that span the target date.
@@ -123,6 +123,7 @@ public class TaskList {
         for (Task task : tasks) {
             if (task instanceof Deadline) {
                 Deadline d = (Deadline) task;
+                // Check if the deadline date matches the target date
                 if (d.getBy().toLocalDate().equals(targetDate)) {
                     if (!found) {
                         result.append("Here are the tasks on ").append(dateString).append(":\n");
@@ -134,7 +135,7 @@ public class TaskList {
                 Event e = (Event) task;
                 LocalDate from = e.getFrom().toLocalDate();
                 LocalDate to = e.getTo().toLocalDate();
-                // Include if the event spans the target date
+                // Include if the event spans the target date (inclusive)
                 if (!from.isAfter(targetDate) && !to.isBefore(targetDate)) {
                     if (!found) {
                         result.append("Here are the tasks on ").append(dateString).append(":\n");
@@ -147,6 +148,40 @@ public class TaskList {
 
         if (!found) {
             return "No tasks found on " + dateString + ".";
+        }
+
+        return result.toString().trim();
+    }
+
+    // Helper method to find tasks by keyword in description
+    /**
+     * Finds and returns a string listing all tasks whose description contains the given keyword.
+     * The search is case-insensitive.
+     *
+     * @param keyword The keyword to search for within task descriptions.
+     * @return A formatted string listing the matching tasks, or a message indicating none were found.
+     */
+    public String findTasksByKeyword(String keyword) {
+        StringBuilder result = new StringBuilder();
+        boolean found = false;
+        int count = 0;
+
+        // Convert keyword to lowercase for case-insensitive comparison
+        String lowerKeyword = keyword.toLowerCase();
+
+        for (Task task : tasks) {
+            // Check if the task's description contains the keyword
+            if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                if (!found) {
+                    result.append("Here are the matching tasks in your list:\n");
+                    found = true;
+                }
+                result.append(++count).append(".").append(task).append("\n");
+            }
+        }
+
+        if (!found) {
+            return "No tasks found containing '" + keyword + "'.";
         }
 
         return result.toString().trim();
