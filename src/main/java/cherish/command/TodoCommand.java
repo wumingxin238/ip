@@ -6,10 +6,19 @@ import cherish.model.TaskList;
 import cherish.model.Todo;
 import cherish.ui.Ui;
 
+/**
+ * Command to add a new Todo task to the task list.
+ * Creates a simple task without a specific date or time.
+ */
 public class TodoCommand extends Command {
 
     private String description;
 
+    /**
+     * Constructs a TodoCommand with the given task description.
+     *
+     * @param description The description of the todo task.
+     */
     public TodoCommand(String description) {
         this.description = description;
     }

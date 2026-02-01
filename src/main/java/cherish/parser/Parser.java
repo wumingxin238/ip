@@ -3,8 +3,19 @@ package cherish.parser;
 import cherish.CherishException;
 import cherish.command.*;
 
+/**
+ * Parses user input commands and returns the corresponding Command object.
+ * Handles various command formats and validates input where necessary.
+ */
 public class Parser {
 
+    /**
+     * Parses the full user command string and returns the appropriate Command instance.
+     *
+     * @param fullCommand The raw command string entered by the user.
+     * @return A Command object representing the parsed instruction.
+     * @throws CherishException If the command is invalid, unrecognized, or missing required arguments.
+     */
     public static Command parse(String fullCommand) throws CherishException {
         if (fullCommand == null || fullCommand.trim().isEmpty()) {
             throw new CherishException("You didn't type anything! Try a command like 'todo read book'.");
@@ -42,6 +53,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Helper method to extract and validate the task index from commands like 'mark', 'unmark', or 'delete'.
+     *
+     * @param input The full command string (e.g., "mark 1").
+     * @param commandName The name of the command being parsed (e.g., "mark").
+     * @return The 0-based integer index of the task.
+     * @throws CherishException If the index is missing, not a number, or not positive.
+     */
     private static int parseIndex(String input, String commandName) throws CherishException {
         try {
             String numStr = input.substring(commandName.length()).trim();
@@ -53,6 +72,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses a 'deadline' command string.
+     * Expected format: "deadline DESCRIPTION /by yyyy-MM-dd HHmm"
+     *
+     * @param input The full 'deadline' command string.
+     * @return A DeadlineCommand object.
+     * @throws CherishException If the format is invalid or required parts are missing.
+     */
     private static Command parseDeadline(String input) throws CherishException {
         String[] parts = input.split(" /by ", 2);
         if (parts.length != 2) {
@@ -66,6 +93,14 @@ public class Parser {
         return new DeadlineCommand(desc, by);
     }
 
+    /**
+     * Parses an 'event' command string.
+     * Expected format: "event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm"
+     *
+     * @param input The full 'event' command string.
+     * @return An EventCommand object.
+     * @throws CherishException If the format is invalid or required parts are missing.
+     */
     private static Command parseEvent(String input) throws CherishException {
         String[] parts = input.split(" /from ", 2);
         if (parts.length != 2) {

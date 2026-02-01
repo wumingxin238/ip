@@ -10,12 +10,22 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Command to add a new Deadline task to the task list.
+ * Parses a deadline string and adds the resulting task.
+ */
 public class DeadlineCommand extends Command {
 
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private String description;
     private String byString;
 
+    /**
+     * Constructs a DeadlineCommand with the given description and deadline date/time string.
+     *
+     * @param description The description of the deadline task.
+     * @param byString The deadline date and time string in the format "yyyy-MM-dd HHmm".
+     */
     public DeadlineCommand(String description, String byString) {
         this.description = description;
         this.byString = byString;
