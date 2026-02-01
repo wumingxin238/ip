@@ -6,6 +6,7 @@ import cherish.model.TaskList;
 import cherish.ui.Ui;
 
 public class MarkCommand extends Command {
+
     private int index;
 
     public MarkCommand(int index) {

@@ -7,6 +7,7 @@ import cherish.model.Todo;
 import cherish.ui.Ui;
 
 public class TodoCommand extends Command {
+
     private String description;
 
     public TodoCommand(String description) {
