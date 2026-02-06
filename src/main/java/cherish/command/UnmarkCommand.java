@@ -1,9 +1,9 @@
 package cherish.command;
 
 import cherish.CherishException;
-import cherish.storage.Storage;
 import cherish.model.Task;
 import cherish.model.TaskList;
+import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**
@@ -11,9 +11,7 @@ import cherish.ui.Ui;
  * Validates the index and checks if the task is already unmarked.
  */
 public class UnmarkCommand extends Command {
-    
     private int index;
-
     /**
      * Constructs an UnmarkCommand with the specified task index.
      *

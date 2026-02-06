@@ -1,14 +1,14 @@
 package cherish.command;
 
-import cherish.CherishException;
-import cherish.model.Event;
-import cherish.storage.Storage;
-import cherish.model.TaskList;
-import cherish.ui.Ui;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import cherish.CherishException;
+import cherish.model.Event;
+import cherish.model.TaskList;
+import cherish.storage.Storage;
+import cherish.ui.Ui;
 
 /**
  * Command to add a new Event task to the task list.
@@ -36,12 +36,14 @@ public class EventCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        LocalDateTime from, to;
+        LocalDateTime from;
+        LocalDateTime to;
         try {
             from = LocalDateTime.parse(fromString, INPUT_FORMATTER);
             to = LocalDateTime.parse(toString, INPUT_FORMATTER);
         } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format for event! Use: yyyy-MM-dd HHmm (e.g., 2026-02-01 1400)");
+            throw new CherishException("Invalid date/time format for event!"
+                    + " Use: yyyy-MM-dd HHmm (e.g., 2026-02-01 1400)");
         }
 
         if (from.isAfter(to)) {
@@ -57,7 +59,7 @@ public class EventCommand extends Command {
             // Handle save error if needed
         }
 
-        return "Got it! I've added this task:\n  " + event +
-                "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return "Got it! I've added this task:\n  " + event
+                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
     }
 }

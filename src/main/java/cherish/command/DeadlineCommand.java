@@ -1,14 +1,16 @@
 package cherish.command;
 
-import cherish.CherishException;
-import cherish.model.Deadline;
-import cherish.storage.Storage;
-import cherish.model.TaskList;
-import cherish.ui.Ui;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import cherish.CherishException;
+import cherish.model.Deadline;
+import cherish.model.TaskList;
+import cherish.storage.Storage;
+import cherish.ui.Ui;
+
+
 
 /**
  * Command to add a new Deadline task to the task list.
@@ -37,7 +39,8 @@ public class DeadlineCommand extends Command {
         try {
             by = LocalDateTime.parse(byString, INPUT_FORMATTER);
         } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format for deadline! Use: yyyy-MM-dd HHmm (e.g., 2026-01-31 1800)");
+            throw new CherishException("Invalid date/time format for deadline!"
+                    + " Use: yyyy-MM-dd HHmm (e.g., 2026-01-31 1800)");
         }
 
         Deadline deadline = new Deadline(description, by);
@@ -52,7 +55,7 @@ public class DeadlineCommand extends Command {
             // You may choose to show a warning in UI later
         }
 
-        return "Got it! I've added this task:\n  " + deadline +
-                "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return "Got it! I've added this task:\n  " + deadline
+                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
     }
 }

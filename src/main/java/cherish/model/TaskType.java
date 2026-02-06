@@ -40,10 +40,10 @@ public enum TaskType {
      */
     public static TaskType fromSymbol(String symbol) throws CherishException {
         return switch (symbol) {
-            case "T" -> TODO;
-            case "D" -> DEADLINE;
-            case "E" -> EVENT;
-            default -> throw new CherishException("Unknown task type: " + symbol);
+        case "T" -> TODO;
+        case "D" -> DEADLINE;
+        case "E" -> EVENT;
+        default -> throw new CherishException("Unknown task type: " + symbol);
         };
     }
 }

@@ -1,4 +1,3 @@
-// src/main/java/cherish/Main.java
 package cherish;
 
 /**

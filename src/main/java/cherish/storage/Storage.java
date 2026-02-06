@@ -1,8 +1,5 @@
 package cherish.storage;
 
-import cherish.*;
-import cherish.model.*;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,13 +9,20 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import cherish.CherishException;
+import cherish.model.Deadline;
+import cherish.model.Event;
+import cherish.model.Task;
+import cherish.model.TaskType;
+import cherish.model.Todo;
+
 /**
  * Handles reading from and writing to the task storage file.
  * Ensures the data directory exists and manages the persistence of the task list.
  */
 public class Storage {
-    private String filePath;
     private static final DateTimeFormatter SAVE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private String filePath;
 
     /**
      * Constructs a Storage object with the path to the data file.
@@ -57,7 +61,9 @@ public class Storage {
             String line;
             java.util.ArrayList<Task> loadedTasks = new java.util.ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
                 loadedTasks.add(parseTask(line));
             }
             return loadedTasks.toArray(new Task[0]);
@@ -106,23 +112,29 @@ public class Storage {
         TaskType type = TaskType.fromSymbol(typeSymbol);
 
         switch (type) {
-            case TODO:
-                task = new Todo(description);
-                break;
-            case DEADLINE:
-                if (parts.length < 4) throw new CherishException("Corrupted deadline data");
-                LocalDateTime by = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
-                task = new Deadline(description, by);
-                break;
-            case EVENT:
-                if (parts.length < 5) throw new CherishException("Corrupted event data");
-                LocalDateTime from = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
-                LocalDateTime to = LocalDateTime.parse(parts[4], SAVE_FORMATTER);
-                task = new Event(description, from, to);
-                break;
+        case TODO:
+            task = new Todo(description);
+            break;
+        case DEADLINE:
+            if (parts.length < 4) {
+                throw new CherishException("Corrupted deadline data");
+            }
+            LocalDateTime by = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
+            task = new Deadline(description, by);
+            break;
+        case EVENT:
+            if (parts.length < 5) {
+                throw new CherishException("Corrupted event data");
+            }
+            LocalDateTime from = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
+            LocalDateTime to = LocalDateTime.parse(parts[4], SAVE_FORMATTER);
+            task = new Event(description, from, to);
+            break;
+        default:
+            throw new CherishException("Unknown task type");
         }
 
-        if (isDone && task != null) {
+        if (isDone) {
             task.markAsDone();
         }
         return task;

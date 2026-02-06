@@ -1,8 +1,8 @@
 package cherish.command;
 
 import cherish.CherishException;
-import cherish.storage.Storage;
 import cherish.model.TaskList;
+import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**

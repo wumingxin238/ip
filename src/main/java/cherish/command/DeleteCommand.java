@@ -1,9 +1,9 @@
 package cherish.command;
 
 import cherish.CherishException;
-import cherish.storage.Storage;
 import cherish.model.Task;
 import cherish.model.TaskList;
+import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**
@@ -46,7 +46,7 @@ public class DeleteCommand extends Command {
         }
 
         // Construct success message
-        return "Noted! I've removed this task:\n  " + deletedTask +
-                "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return "Noted! I've removed this task:\n  " + deletedTask
+                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
     }
 }

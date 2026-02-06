@@ -56,9 +56,4 @@ public class Cherish {
         }
         ui.showBye();
     }
-<<<<<<< HEAD
 }
-
-=======
-}
->>>>>>> branch-A-JavaDoc

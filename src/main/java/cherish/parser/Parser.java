@@ -1,8 +1,18 @@
-// src/main/java/cherish/parser/Parser.java
 package cherish.parser;
 
 import cherish.CherishException;
-import cherish.command.*;
+import cherish.command.ByeCommand;
+import cherish.command.Command;
+import cherish.command.DeadlineCommand;
+import cherish.command.DeleteCommand;
+import cherish.command.EventCommand;
+import cherish.command.FindCommand;
+import cherish.command.FindDateCommand;
+import cherish.command.ListCommand;
+import cherish.command.MarkCommand;
+import cherish.command.TodoCommand;
+import cherish.command.UnmarkCommand;
+
 
 /**
  * Parses user input commands and returns the corresponding Command object.
@@ -39,7 +49,9 @@ public class Parser {
             return new DeleteCommand(index);
         } else if (input.startsWith("todo ")) {
             String desc = input.substring(5).trim();
-            if (desc.isEmpty()) throw new CherishException("The description of a todo cannot be empty.");
+            if (desc.isEmpty()) {
+                throw new CherishException("The description of a todo cannot be empty.");
+            }
             return new TodoCommand(desc);
         } else if (input.startsWith("deadline ")) {
             return parseDeadline(input);
@@ -47,14 +59,19 @@ public class Parser {
             return parseEvent(input);
         } else if (input.startsWith("finddate ")) { // Existing command
             String dateStr = input.substring(9).trim();
-            if (dateStr.isEmpty()) throw new CherishException("Please specify a date! Usage: finddate yyyy-MM-dd");
+            if (dateStr.isEmpty()) {
+                throw new CherishException("Please specify a date! Usage: finddate yyyy-MM-dd");
+            }
             return new FindDateCommand(dateStr);
         } else if (input.startsWith("find ")) { // New command
             String keyword = input.substring(5).trim(); // Extract the keyword after "find "
-            if (keyword.isEmpty()) throw new CherishException("Please specify a keyword to search for! Usage: find KEYWORD");
+            if (keyword.isEmpty()) {
+                throw new CherishException("Please specify a keyword to search for! Usage: find KEYWORD");
+            }
             return new FindCommand(keyword);
         } else {
-            throw new CherishException("I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'find', etc.");
+            throw new CherishException("I don't recognize that command! Try 'todo', "
+                    + "'deadline', 'event', 'list', 'find', etc.");
         }
     }
 
@@ -70,7 +87,9 @@ public class Parser {
         try {
             String numStr = input.substring(commandName.length()).trim();
             int index = Integer.parseInt(numStr) - 1; // convert to 0-based
-            if (index < 0) throw new CherishException("Task number must be positive.");
+            if (index < 0) {
+                throw new CherishException("Task number must be positive.");
+            }
             return index;
         } catch (NumberFormatException e) {
             throw new CherishException("Invalid task number! Please enter a number after '" + commandName + "'.");
@@ -109,7 +128,8 @@ public class Parser {
     private static Command parseEvent(String input) throws CherishException {
         String[] parts = input.split(" /from ", 2);
         if (parts.length != 2) {
-            throw new CherishException("Invalid event format! Use: event DESC /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM");
+            throw new CherishException("Invalid event format! Use: event DESC"
+                    + " /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM");
         }
         String desc = parts[0].substring(6).trim(); // Remove "event " part
         String[] fromTo = parts[1].split(" /to ", 2);

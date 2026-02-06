@@ -1,7 +1,4 @@
-// src/main/java/cherish/model/TaskList.java
 package cherish.model;
-
-import cherish.CherishException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,16 +6,18 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import cherish.CherishException;
+
 /**
  * Manages a list of tasks in the Cherish application.
  * Provides methods for adding, retrieving, removing, and marking tasks,
  * as well as finding tasks by date and generating display strings.
  */
 public class TaskList {
-    private ArrayList<Task> tasks;
-    // The formatter is correctly set with Locale.ENGLISH
     public static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd yyyy HHmm", Locale.ENGLISH);
+    private ArrayList<Task> tasks;
+    // The formatter is correctly set with Locale.ENGLISH
 
     /**
      * Constructs an empty TaskList.

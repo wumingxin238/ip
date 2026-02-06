@@ -1,11 +1,19 @@
 // src/test/java/cherish/parser/ParserTest.java
 package cherish.parser;
 
-import cherish.command.*;
-import cherish.CherishException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import cherish.CherishException;
+import cherish.command.ByeCommand;
+import cherish.command.Command;
+import cherish.command.DeadlineCommand;
+import cherish.command.EventCommand;
+import cherish.command.ListCommand;
+import cherish.command.MarkCommand;
+import cherish.command.TodoCommand;
 
 class ParserTest {
 

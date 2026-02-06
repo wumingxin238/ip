@@ -1,10 +1,10 @@
 package cherish.model;
 
-import cherish.CherishException;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import cherish.CherishException;
 
 /**
  * Represents a Deadline task in the Cherish application.
@@ -26,7 +26,9 @@ public class Deadline extends Task {
         try {
             this.by = LocalDateTime.parse(byStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
         } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format! Please use 'yyyy-MM-dd HHmm' (e.g., 2019-12-02 1800).");
+            throw new CherishException("Invalid date/time format!"
+                    + " Please use 'yyyy-MM-dd HHmm'"
+                    + " (e.g., 2019-12-02 1800).");
         }
     }
 
@@ -51,7 +53,7 @@ public class Deadline extends Task {
     @Override
     public String toString() {
         String formattedDate = by.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"));
-        return "[" + getType().getSymbol() + "][" + getStatusIcon() + "] " + description + " (by: " + formattedDate + ")";
+        return super.toString() + " (by: " + formattedDate + ")";
     }
 
     @Override

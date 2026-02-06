@@ -1,10 +1,9 @@
-// src/main/java/cherish/command/FindCommand.java
 package cherish.command;
 
-import cherish.model.TaskList;
-import cherish.ui.Ui;
-import cherish.storage.Storage;
 import cherish.CherishException;
+import cherish.model.TaskList;
+import cherish.storage.Storage;
+import cherish.ui.Ui;
 
 /**
  * Command to find tasks in the list based on a keyword in their description.

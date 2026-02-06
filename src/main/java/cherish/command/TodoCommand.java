@@ -1,9 +1,9 @@
 package cherish.command;
 
 import cherish.CherishException;
-import cherish.storage.Storage;
 import cherish.model.TaskList;
 import cherish.model.Todo;
+import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**
@@ -27,8 +27,8 @@ public class TodoCommand extends Command {
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
         Todo todo = new Todo(description);
         tasks.add(todo);
-        String msg = "Got it! I've added this task:\n  " + todo +
-                "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        String msg = "Got it! I've added this task:\n  " + todo
+                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
         // Save after adding
         try {
             storage.save(tasks.toArray());

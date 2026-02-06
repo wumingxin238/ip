@@ -20,8 +20,8 @@ public class Ui {
      * Displays the welcome message to the user.
      */
     public void showWelcome() {
-        System.out.println("Hello! I'm Cherish\n" +
-                "What can I do for you?\n");
+        System.out.println("Hello! I'm Cherish\n"
+                + "What can I do for you?\n");
     }
 
     /**

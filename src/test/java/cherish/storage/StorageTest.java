@@ -1,14 +1,9 @@
 // src/test/java/cherish/storage/StorageTest.java
 package cherish.storage;
 
-import cherish.CherishException;
-import cherish.model.Deadline;
-import cherish.model.Task;
-import cherish.model.Todo;
-import cherish.storage.Storage;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import cherish.CherishException;
+import cherish.model.Deadline;
+import cherish.model.Task;
+import cherish.model.Todo;
 
 class StorageTest {
 
@@ -99,7 +101,7 @@ class StorageTest {
         assertTrue(reloadedTasks[0] instanceof Todo);
 
         assertEquals(originalDeadline.getDescription(), reloadedTasks[1].getDescription());
-        assertEquals(originalDeadline.getBy(), ((Deadline)reloadedTasks[1]).getBy());
+        assertEquals(originalDeadline.getBy(), ((Deadline) reloadedTasks[1]).getBy());
         assertEquals(originalDeadline.isDone(), reloadedTasks[1].isDone()); // Should be false
         assertTrue(reloadedTasks[1] instanceof Deadline);
     }

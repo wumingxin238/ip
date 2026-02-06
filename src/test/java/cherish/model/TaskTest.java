@@ -1,15 +1,17 @@
 // src/test/java/cherish/model/TaskTest.java
 package cherish.model;
 
-import cherish.CherishException;
-import cherish.model.Deadline;
-import cherish.model.Event;
-import cherish.model.Todo;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import cherish.CherishException;
+
+
 
 class TaskTest {
 
@@ -41,7 +43,8 @@ class TaskTest {
         assertEquals("Submit report", deadline.getDescription(), "Description should match");
         assertEquals(byTime, deadline.getBy(), "By time should match");
         assertFalse(deadline.isDone(), "New Deadline should not be done by default");
-        assertEquals("[D][ ] Submit report (by: Feb 01 2026 1200)", deadline.toString(), "toString format should be correct");
+        assertEquals("[D][ ] Submit report (by: Feb 01 2026 1200)",
+                deadline.toString(), "toString format should be correct");
     }
 
     @Test
@@ -52,7 +55,8 @@ class TaskTest {
         assertTrue(deadline.isDone(), "Deadline should be marked as done");
         deadline.markAsNotDone();
         assertFalse(deadline.isDone(), "Deadline should be marked as not done");
-        assertEquals("[D][ ] Submit report (by: Feb 01 2026 1200)", deadline.toString(), "toString should reflect not done status");
+        assertEquals("[D][ ] Submit report (by: Feb 01 2026 1200)", deadline.toString(),
+                "toString should reflect not done status");
     }
 
     @Test
@@ -64,6 +68,7 @@ class TaskTest {
         assertEquals(fromTime, event.getFrom(), "From time should match");
         assertEquals(toTime, event.getTo(), "To time should match");
         assertFalse(event.isDone(), "New Event should not be done by default");
-        assertEquals("[E][ ] Meeting (from: Feb 01 2026 1000 to: Feb 01 2026 1100)", event.toString(), "toString format should be correct");
+        assertEquals("[E][ ] Meeting (from: Feb 01 2026 1000 to: Feb 01 2026 1100)",
+                event.toString(), "toString format should be correct");
     }
 }
