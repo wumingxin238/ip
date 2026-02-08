@@ -109,10 +109,30 @@ public class Parser {
         if (parts.length != 2) {
             throw new CherishException("Invalid deadline format! Use: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
         }
-        String desc = parts[0].substring(9).trim(); // Remove "deadline " part
+
+        // Check the length before substring to avoid StringIndexOutOfBoundsException
+        String descPart = parts[0].trim();
+        if (descPart.length() <= 9) { // "deadline " is 9 characters long
+            if (descPart.equalsIgnoreCase("deadline")) {
+                throw new CherishException("The description of a deadline cannot be empty. "
+                        + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
+            } else {
+                // Handle other malformed cases if needed
+                throw new CherishException("Invalid deadline format! Use: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
+            }
+        }
+
+        String desc = descPart.substring(9).trim(); // Remove "deadline " part
         String by = parts[1].trim();
-        if (desc.isEmpty() || by.isEmpty()) {
-            throw new CherishException("Deadline description and time cannot be empty.");
+
+        // Optional: Double-check after trim if needed, though length check above makes this less likely
+        if (desc.isEmpty()) {
+            throw new CherishException("The description of a deadline cannot be empty. "
+                    + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
+        }
+        if (by.isEmpty()) {
+            throw new CherishException("The deadline time (/by ...) cannot be empty."
+                    + " Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm");
         }
         return new DeadlineCommand(desc, by);
     }
@@ -131,7 +151,21 @@ public class Parser {
             throw new CherishException("Invalid event format! Use: event DESC"
                     + " /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM");
         }
-        String desc = parts[0].substring(6).trim(); // Remove "event " part
+
+        // Check the length before substring to avoid StringIndexOutOfBoundsException
+        String descPart = parts[0].trim();
+        if (descPart.length() <= 6) { // "event " is 6 characters long
+            if (descPart.equalsIgnoreCase("event")) {
+                throw new CherishException("The description of an event cannot be empty."
+                        + " Format: event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm");
+            } else {
+                // Handle other malformed cases if needed, but mostly the above check is sufficient
+                throw new CherishException("Invalid event format!"
+                        + " Use: event DESC /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM");
+            }
+        }
+
+        String desc = descPart.substring(6).trim(); // Remove "event " part
         String[] fromTo = parts[1].split(" /to ", 2);
         if (fromTo.length != 2) {
             throw new CherishException("Invalid event format! Missing '/to'.");

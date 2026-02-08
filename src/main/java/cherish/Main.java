@@ -1,19 +1,35 @@
+// src/main/java/cherish/Main.java
 package cherish;
 
-/**
- * The main entry point for the Cherish application.
- * This class initializes the application and starts its execution loop.
- */
-public class Main {
+import java.io.IOException;
 
-    /**
-     * The main method that serves as the entry point for the JVM to execute the program.
-     *
-     * @param args Command-line arguments passed to the application (currently unused by Cherish).
-     */
-    public static void main(String[] args) {
-        // Initialize and start the application logic
-        Cherish app = new Cherish("data/cherish.txt"); // Assuming CherishApp is your main app controller
-        app.run(); // Call the run method to start the interaction loop
+import cherish.ui.MainWindow;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+
+/**
+ * A GUI for Cherish using FXML.
+ */
+public class Main extends Application {
+
+    private Cherish cherish = new Cherish("data/cherish.txt");
+
+    @Override
+    public void start(Stage stage) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/view/MainWindow.fxml"));
+            AnchorPane ap = fxmlLoader.load();
+            Scene scene = new Scene(ap);
+            stage.setTitle("Cherish");
+            stage.setScene(scene);
+            MainWindow controller = fxmlLoader.<MainWindow>getController();
+            controller.setCherish(cherish);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
