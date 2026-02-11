@@ -46,16 +46,11 @@ test {
 }
 
 application {
-    mainClass.set("cherish.Main")
+    mainClass.set("cherish.Launcher")
 }
 
-jar {
-    archiveBaseName = 'Cherish'
-    manifest {
-        attributes(
-                'Main-Class' : application.mainClass.get()
-        )
-    }
+shadowJar {
+    archiveFileName = 'Cherish.jar'
 }
 
 run{
