@@ -24,8 +24,9 @@ public class TaskList {
 
     private final ArrayList<Task> tasks;
 
-    private final List<Task> tasks;
-
+    /**
+     * Constructor for a new taskList
+     */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
@@ -47,6 +48,9 @@ public class TaskList {
         }
     }
 
+    /**
+     * Add a task into the taskList
+     */
     public void add(Task task) {
         int oldSize = tasks.size();
         tasks.add(task);
@@ -64,6 +68,9 @@ public class TaskList {
         return tasks.size();
     }
 
+    /**
+     * Delete a task of specified index
+     */
     public void remove(int index) {
         assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.remove: "
                 + index + ". Size is: " + tasks.size();
@@ -174,22 +181,6 @@ public class TaskList {
                     "Invalid date format! Please use yyyy-MM-dd (e.g., 2026-01-31)."
             );
         }
-    }
-
-    private boolean occursOnDate(Task task, LocalDate targetDate) {
-        if (task instanceof Deadline) {
-            Deadline deadline = (Deadline) task;
-            return deadline.getBy().toLocalDate().equals(targetDate);
-        }
-
-        if (task instanceof Event) {
-            Event event = (Event) task;
-            LocalDate from = event.getFrom().toLocalDate();
-            LocalDate to = event.getTo().toLocalDate();
-            return !from.isAfter(targetDate) && !to.isBefore(targetDate);
-        }
-
-        return false;
     }
 
     /**
