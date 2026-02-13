@@ -31,6 +31,7 @@ public class Storage {
      * @param filePath The path to the file where tasks will be saved and loaded from.
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.trim().isEmpty() : "Storage constructor filePath cannot be null or empty";
         this.filePath = filePath;
     }
 

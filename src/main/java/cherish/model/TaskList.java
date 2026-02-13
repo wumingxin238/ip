@@ -37,22 +37,26 @@ public class TaskList {
      */
     public TaskList(Task[] loadedTasks) {
         this();
-        if (loadedTasks == null) {
-            return;
-        }
-
-        for (Task task : loadedTasks) {
-            if (task != null) {
-                tasks.add(task);
+        assert tasks != null : "TaskList constructor argument 'tasks' cannot be null";
+        if (loadedTasks != null) {
+            for (Task task : loadedTasks) {
+                if (task != null) {
+                    tasks.add(task);
+                }
             }
         }
     }
 
     public void add(Task task) {
+        int oldSize = tasks.size();
         tasks.add(task);
+        assert tasks.size() == oldSize + 1 : "TaskList size did not increase by 1 after adding a task. Old size: "
+                        + oldSize + ", New size: " + tasks.size();
     }
 
     public Task get(int index) {
+        assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.get: "
+                + index + ". Size is: " + tasks.size();
         return tasks.get(index);
     }
 
@@ -61,6 +65,8 @@ public class TaskList {
     }
 
     public void remove(int index) {
+        assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.remove: "
+                + index + ". Size is: " + tasks.size();
         tasks.remove(index);
     }
 

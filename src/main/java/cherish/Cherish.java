@@ -44,6 +44,7 @@ public class Cherish {
      * @return A string response from Cherish.
      */
     public String getResponse(String input) {
+        assert input != null : "Cherish.getResponse received a null input";
         try {
             // Clear any old messages from the UI buffer before processing
             ui.getMessagesForGui();
