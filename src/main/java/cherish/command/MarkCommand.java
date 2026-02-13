@@ -1,17 +1,17 @@
 package cherish.command;
 
 import cherish.CherishException;
+import cherish.model.Task;
 import cherish.model.TaskList;
 import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**
  * Command to mark a task as completed based on its index in the task list.
- * Validates the index before attempting to mark the task.
  */
 public class MarkCommand extends Command {
 
-    private int index;
+    private final int index;
 
     /**
      * Constructs a MarkCommand with the specified task index.
@@ -24,10 +24,31 @@ public class MarkCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        if (index >= tasks.size()) {
-            throw new CherishException("Task number out of range! You have " + tasks.size() + " tasks.");
-        }
+        validateIndex(tasks);
+
         tasks.markAsDone(index);
-        return "Great! I've marked this task as done:\n  " + tasks.get(index);
+        Task markedTask = tasks.get(index);
+
+        saveTasks(storage, tasks);
+
+        return "Great! I've marked this task as done:\n  " + markedTask;
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private void validateIndex(TaskList tasks) throws CherishException {
+        if (index < 0 || index >= tasks.size()) {
+            throw new CherishException(
+                    "Task number out of range! You have "
+                            + tasks.size()
+                            + (tasks.size() == 1 ? " task." : " tasks.")
+            );
+        }
+    }
+
+    private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
+        storage.save(tasks.toArray());
     }
 }

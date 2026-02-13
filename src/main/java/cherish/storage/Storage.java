@@ -21,6 +21,7 @@ import cherish.model.Todo;
  * Ensures the data directory exists and manages the persistence of the task list.
  */
 public class Storage {
+
     private static final DateTimeFormatter SAVE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
     private String filePath;
 
@@ -30,6 +31,7 @@ public class Storage {
      * @param filePath The path to the file where tasks will be saved and loaded from.
      */
     public Storage(String filePath) {
+        assert filePath != null && !filePath.trim().isEmpty() : "Storage constructor filePath cannot be null or empty";
         this.filePath = filePath;
     }
 
@@ -101,42 +103,47 @@ public class Storage {
     private Task parseTask(String line) throws CherishException {
         String[] parts = line.split(" \\| ", -1); // Use -1 to keep empty trailing parts if any
         if (parts.length < 3) {
-            throw new CherishException("Corrupted data format");
+            throw new CherishException("Corrupted data format.");
         }
 
         String typeSymbol = parts[0];
         boolean isDone = "1".equals(parts[1]);
         String description = parts[2];
 
-        Task task = null;
+        Task task;
         TaskType type = TaskType.fromSymbol(typeSymbol);
 
         switch (type) {
-        case TODO:
+        case TODO: {
             task = new Todo(description);
             break;
-        case DEADLINE:
+        }
+        case DEADLINE: {
             if (parts.length < 4) {
-                throw new CherishException("Corrupted deadline data");
+                throw new CherishException("Corrupted deadline data.");
             }
             LocalDateTime by = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
             task = new Deadline(description, by);
             break;
-        case EVENT:
+        }
+        case EVENT: {
             if (parts.length < 5) {
-                throw new CherishException("Corrupted event data");
+                throw new CherishException("Corrupted event data.");
             }
             LocalDateTime from = LocalDateTime.parse(parts[3], SAVE_FORMATTER);
             LocalDateTime to = LocalDateTime.parse(parts[4], SAVE_FORMATTER);
             task = new Event(description, from, to);
             break;
-        default:
-            throw new CherishException("Unknown task type");
+        }
+        default: {
+            throw new CherishException("Unknown task type.");
+        }
         }
 
         if (isDone) {
             task.markAsDone();
         }
+
         return task;
     }
 }

@@ -7,17 +7,16 @@ import cherish.storage.Storage;
 import cherish.ui.Ui;
 
 /**
- * Command to delete a task from the task list by its index.
- * Validates the index before attempting to remove the task.
+ * Command to delete a task from the task list.
  */
 public class DeleteCommand extends Command {
 
-    private int index;
+    private final int index;
 
     /**
-     * Constructs a DeleteCommand with the specified task index.
+     * Creates a DeleteCommand.
      *
-     * @param index The zero-based index of the task to be deleted.
+     * @param index Zero-based index of the task to delete.
      */
     public DeleteCommand(int index) {
         this.index = index;
@@ -25,28 +24,38 @@ public class DeleteCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        // Validate index
-        if (index < 0 || index >= tasks.size()) {
-            throw new CherishException("Task number out of range! You have " + tasks.size() + " task(s).");
-        }
+        validateIndex(tasks);
 
-        // Get the task to delete (for display)
         Task deletedTask = tasks.get(index);
-
-        // Perform deletion
         tasks.remove(index);
 
-        // Save updated list to file
-        try {
-            storage.save(tasks.toArray());
-        } catch (CherishException e) {
-            // Optional: log or warn, but don't crash
-            // For now, we assume save is critical; if it fails, let exception propagate
-            throw new CherishException("Failed to update task file after deletion.");
-        }
+        saveTasks(storage, tasks);
 
-        // Construct success message
-        return "Noted! I've removed this task:\n  " + deletedTask
-                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return buildSuccessMessage(deletedTask, tasks.size());
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private void validateIndex(TaskList tasks) throws CherishException {
+        if (index < 0 || index >= tasks.size()) {
+            throw new CherishException(
+                    "Task number out of range! You have " + tasks.size() + " task(s)."
+            );
+        }
+    }
+
+    private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
+        storage.save(tasks.toArray());
+    }
+
+    private String buildSuccessMessage(Task deletedTask, int taskCount) {
+        return "Noted! I've removed this task:\n  "
+                + deletedTask
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 }

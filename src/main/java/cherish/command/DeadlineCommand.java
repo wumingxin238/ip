@@ -10,23 +10,22 @@ import cherish.model.TaskList;
 import cherish.storage.Storage;
 import cherish.ui.Ui;
 
-
-
 /**
- * Command to add a new Deadline task to the task list.
- * Parses a deadline string and adds the resulting task.
+ * Command to add a new Deadline task.
  */
 public class DeadlineCommand extends Command {
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private String description;
-    private String byString;
+    private static final DateTimeFormatter INPUT_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    private final String description;
+    private final String byString;
 
     /**
-     * Constructs a DeadlineCommand with the given description and deadline date/time string.
+     * Creates a DeadlineCommand.
      *
-     * @param description The description of the deadline task.
-     * @param byString The deadline date and time string in the format "yyyy-MM-dd HHmm".
+     * @param description Description of the deadline.
+     * @param byString Deadline date and time in yyyy-MM-dd HHmm format.
      */
     public DeadlineCommand(String description, String byString) {
         this.description = description;
@@ -35,27 +34,40 @@ public class DeadlineCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        LocalDateTime by;
-        try {
-            by = LocalDateTime.parse(byString, INPUT_FORMATTER);
-        } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format for deadline!"
-                    + " Use: yyyy-MM-dd HHmm (e.g., 2026-01-31 1800)");
-        }
+        LocalDateTime by = parseDateTime(byString);
 
         Deadline deadline = new Deadline(description, by);
         tasks.add(deadline);
 
-        // Save to file immediately after adding
-        try {
-            storage.save(tasks.toArray());
-        } catch (CherishException e) {
-            // Optional: notify user save failed, but don't break flow
-            // For now, we'll let it fail silently or rethrow if critical
-            // You may choose to show a warning in UI later
-        }
+        saveTasks(storage, tasks);
 
-        return "Got it! I've added this task:\n  " + deadline
-                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return buildSuccessMessage(deadline, tasks.size());
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private LocalDateTime parseDateTime(String dateTimeStr) throws CherishException {
+        try {
+            return LocalDateTime.parse(dateTimeStr, INPUT_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new CherishException(
+                    "Invalid date/time format! Use yyyy-MM-dd HHmm (e.g., 2026-01-31 1800)."
+            );
+        }
+    }
+
+    private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
+        storage.save(tasks.toArray());
+    }
+
+    private String buildSuccessMessage(Deadline deadline, int taskCount) {
+        return "Got it! I've added this task:\n  "
+                + deadline
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 }

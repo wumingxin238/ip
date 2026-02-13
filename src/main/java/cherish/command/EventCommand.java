@@ -12,21 +12,22 @@ import cherish.ui.Ui;
 
 /**
  * Command to add a new Event task to the task list.
- * Parses start and end date/time strings and creates the event.
  */
 public class EventCommand extends Command {
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private String description;
-    private String fromString;
-    private String toString;
+    private static final DateTimeFormatter INPUT_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    private final String description;
+    private final String fromString;
+    private final String toString;
 
     /**
-     * Constructs an EventCommand with the given description and time range strings.
+     * Creates an EventCommand.
      *
-     * @param description The description of the event task.
-     * @param fromString The start date and time string in the format "yyyy-MM-dd HHmm".
-     * @param toString The end date and time string in the format "yyyy-MM-dd HHmm".
+     * @param description Description of the event.
+     * @param fromString Start date/time string.
+     * @param toString End date/time string.
      */
     public EventCommand(String description, String fromString, String toString) {
         this.description = description;
@@ -36,30 +37,50 @@ public class EventCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        LocalDateTime from;
-        LocalDateTime to;
-        try {
-            from = LocalDateTime.parse(fromString, INPUT_FORMATTER);
-            to = LocalDateTime.parse(toString, INPUT_FORMATTER);
-        } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format for event!"
-                    + " Use: yyyy-MM-dd HHmm (e.g., 2026-02-01 1400)");
-        }
+        LocalDateTime from = parseDateTime(fromString, "event");
+        LocalDateTime to = parseDateTime(toString, "event");
 
-        if (from.isAfter(to)) {
-            throw new CherishException("Event start time cannot be after end time!");
-        }
+        validateTimeRange(from, to);
 
         Event event = new Event(description, from, to);
         tasks.add(event);
 
-        try {
-            storage.save(tasks.toArray());
-        } catch (CherishException e) {
-            // Handle save error if needed
-        }
+        saveTasks(storage, tasks);
 
-        return "Got it! I've added this task:\n  " + event
-                + "\nNow you have " + tasks.size() + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return buildSuccessMessage(event, tasks.size());
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private LocalDateTime parseDateTime(String input, String taskType) throws CherishException {
+        try {
+            return LocalDateTime.parse(input, INPUT_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new CherishException(
+                    "Invalid date/time format for " + taskType + "! "
+                            + "Use: yyyy-MM-dd HHmm (e.g., 2026-02-01 1400)"
+            );
+        }
+    }
+
+    private void validateTimeRange(LocalDateTime from, LocalDateTime to) throws CherishException {
+        if (from.isAfter(to)) {
+            throw new CherishException("Event start time cannot be after end time!");
+        }
+    }
+
+    private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
+        storage.save(tasks.toArray());
+    }
+
+    private String buildSuccessMessage(Event event, int taskCount) {
+        return "Got it! I've added this task:\n  "
+                + event
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 }

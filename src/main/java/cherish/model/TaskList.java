@@ -11,10 +11,18 @@ import cherish.CherishException;
 
 /**
  * Manages a list of tasks in the Cherish application.
+ * Provides methods for adding, retrieving, removing, marking,
+ * and searching tasks.
  */
 public class TaskList {
-    public static final DateTimeFormatter DATE_FORMATTER =
+
+    public static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd yyyy HHmm", Locale.ENGLISH);
+
+    private static final DateTimeFormatter INPUT_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    private final ArrayList<Task> tasks;
 
     private final List<Task> tasks;
 
@@ -23,10 +31,13 @@ public class TaskList {
     }
 
     /**
-     * Load existing tasks
+     * Constructs a TaskList from an existing array of tasks.
+     *
+     * @param loadedTasks Tasks loaded from storage.
      */
     public TaskList(Task[] loadedTasks) {
         this();
+        assert tasks != null : "TaskList constructor argument 'tasks' cannot be null";
         if (loadedTasks != null) {
             for (Task task : loadedTasks) {
                 if (task != null) {
@@ -37,10 +48,15 @@ public class TaskList {
     }
 
     public void add(Task task) {
+        int oldSize = tasks.size();
         tasks.add(task);
+        assert tasks.size() == oldSize + 1 : "TaskList size did not increase by 1 after adding a task. Old size: "
+                        + oldSize + ", New size: " + tasks.size();
     }
 
     public Task get(int index) {
+        assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.get: "
+                + index + ". Size is: " + tasks.size();
         return tasks.get(index);
     }
 
@@ -49,6 +65,8 @@ public class TaskList {
     }
 
     public void remove(int index) {
+        assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.remove: "
+                + index + ". Size is: " + tasks.size();
         tasks.remove(index);
     }
 
@@ -61,15 +79,14 @@ public class TaskList {
     }
 
     /**
-     * Finds tasks occurring on a given date.
+     * Finds tasks that occur on the given date.
+     *
+     * @param dateString Date in yyyy-MM-dd format.
+     * @return Formatted list of matching tasks.
+     * @throws CherishException If date format is invalid.
      */
     public String findTasksOnDate(String dateString) throws CherishException {
-        LocalDate targetDate;
-        try {
-            targetDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date format! Please use yyyy-MM-dd (e.g., 2026-01-31).");
-        }
+        LocalDate targetDate = parseDate(dateString);
 
         List<Task> matchingTasks = tasks.stream()
                 .filter(task -> occursOnDate(task, targetDate))
@@ -125,19 +142,54 @@ public class TaskList {
         return tasks.toArray(new Task[0]);
     }
 
+    /**
+     * Returns a formatted string of all tasks.
+     */
     public String getListString() {
         if (tasks.isEmpty()) {
             return "Your task list is empty! Add some tasks with 'todo', 'deadline', or 'event'.";
         }
 
-        StringBuilder sb = new StringBuilder("Here are the tasks in your list:\n");
+        StringBuilder result = new StringBuilder("Here are the tasks in your list:\n");
+
         for (int i = 0; i < tasks.size(); i++) {
-            sb.append(i + 1)
+            result.append(i + 1)
                     .append(".")
                     .append(tasks.get(i))
                     .append("\n");
         }
-        return sb.toString().trim();
+
+        return result.toString().trim();
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private LocalDate parseDate(String dateString) throws CherishException {
+        try {
+            return LocalDate.parse(dateString, INPUT_DATE_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new CherishException(
+                    "Invalid date format! Please use yyyy-MM-dd (e.g., 2026-01-31)."
+            );
+        }
+    }
+
+    private boolean occursOnDate(Task task, LocalDate targetDate) {
+        if (task instanceof Deadline) {
+            Deadline deadline = (Deadline) task;
+            return deadline.getBy().toLocalDate().equals(targetDate);
+        }
+
+        if (task instanceof Event) {
+            Event event = (Event) task;
+            LocalDate from = event.getFrom().toLocalDate();
+            LocalDate to = event.getTo().toLocalDate();
+            return !from.isAfter(targetDate) && !to.isBefore(targetDate);
+        }
+
+        return false;
     }
 
     /**
