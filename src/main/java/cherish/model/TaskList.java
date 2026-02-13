@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import cherish.CherishException;
@@ -23,9 +24,8 @@ public class TaskList {
 
     private final ArrayList<Task> tasks;
 
-    /**
-     * Constructs an empty TaskList.
-     */
+    private final List<Task> tasks;
+
     public TaskList() {
         this.tasks = new ArrayList<>();
     }
@@ -88,70 +88,56 @@ public class TaskList {
     public String findTasksOnDate(String dateString) throws CherishException {
         LocalDate targetDate = parseDate(dateString);
 
-        StringBuilder result = new StringBuilder();
-        int matchCount = 0;
+        List<Task> matchingTasks = tasks.stream()
+                .filter(task -> occursOnDate(task, targetDate))
+                .toList();
 
-        for (Task task : tasks) {
-            if (!occursOnDate(task, targetDate)) {
-                continue;
-            }
-
-            if (matchCount == 0) {
-                result.append("Here are the tasks on ")
-                        .append(dateString)
-                        .append(":\n");
-            }
-
-            result.append(++matchCount)
-                    .append(".")
-                    .append(task)
-                    .append("\n");
-        }
-
-        if (matchCount == 0) {
+        if (matchingTasks.isEmpty()) {
             return "No tasks found on " + dateString + ".";
         }
 
-        return result.toString().trim();
-    }
+        StringBuilder result = new StringBuilder(
+                "Here are the tasks on " + dateString + ":\n");
 
-    /**
-     * Finds tasks whose description contains the given keyword.
-     *
-     * @param keyword Keyword to search for.
-     * @return Formatted list of matching tasks.
-     */
-    public String findTasksByKeyword(String keyword) {
-        StringBuilder result = new StringBuilder();
-        int matchCount = 0;
-
-        String lowerKeyword = keyword.toLowerCase();
-
-        for (Task task : tasks) {
-            if (!task.getDescription().toLowerCase().contains(lowerKeyword)) {
-                continue;
-            }
-
-            if (matchCount == 0) {
-                result.append("Here are the matching tasks in your list:\n");
-            }
-
-            result.append(++matchCount)
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            result.append(i + 1)
                     .append(".")
-                    .append(task)
+                    .append(matchingTasks.get(i))
                     .append("\n");
         }
 
-        if (matchCount == 0) {
+        return result.toString().trim();
+    }
+
+    /**
+     * Finds tasks whose description contains the given keyword (case-insensitive).
+     */
+    public String findTasksByKeyword(String keyword) {
+        String lowerKeyword = keyword.toLowerCase();
+
+        List<Task> matchingTasks = tasks.stream()
+                .filter(task -> task.getDescription()
+                        .toLowerCase()
+                        .contains(lowerKeyword))
+                .toList();
+
+        if (matchingTasks.isEmpty()) {
             return "No tasks found containing '" + keyword + "'.";
+        }
+
+        StringBuilder result =
+                new StringBuilder("Here are the matching tasks in your list:\n");
+
+        for (int i = 0; i < matchingTasks.size(); i++) {
+            result.append(i + 1)
+                    .append(".")
+                    .append(matchingTasks.get(i))
+                    .append("\n");
         }
 
         return result.toString().trim();
     }
 
-    /**
-     * Converts the task list to an array.
-     */
     public Task[] toArray() {
         return tasks.toArray(new Task[0]);
     }
@@ -200,6 +186,23 @@ public class TaskList {
             Event event = (Event) task;
             LocalDate from = event.getFrom().toLocalDate();
             LocalDate to = event.getTo().toLocalDate();
+            return !from.isAfter(targetDate) && !to.isBefore(targetDate);
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether a task occurs on the given date.
+     */
+    private boolean occursOnDate(Task task, LocalDate targetDate) {
+        if (task instanceof Deadline d) {
+            return d.getBy().toLocalDate().equals(targetDate);
+        }
+
+        if (task instanceof Event e) {
+            LocalDate from = e.getFrom().toLocalDate();
+            LocalDate to = e.getTo().toLocalDate();
             return !from.isAfter(targetDate) && !to.isBefore(targetDate);
         }
 
