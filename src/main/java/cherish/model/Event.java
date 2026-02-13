@@ -11,40 +11,37 @@ import cherish.CherishException;
  * An Event has a description and a specific start and end date/time.
  */
 public class Event extends Task {
-    protected LocalDateTime from;
-    protected LocalDateTime to;
+
+    private static final DateTimeFormatter INPUT_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+
+    private static final DateTimeFormatter DISPLAY_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
+
+    protected final LocalDateTime from;
+    protected final LocalDateTime to;
 
     /**
-     * Constructs an Event task from a description string and start/end date/time strings.
-     * This constructor is typically used when parsing user input.
+     * Constructs an Event task from user input.
      *
-     * @param description The description of the event task.
-     * @param fromStr The start date and time string in the format "yyyy-MM-dd HHmm".
-     * @param toStr The end date and time string in the format "yyyy-MM-dd HHmm".
-     * @throws CherishException If the date/time strings are in an invalid format.
+     * @param description Description of the event.
+     * @param fromStr Start date and time in yyyy-MM-dd HHmm format.
+     * @param toStr End date and time in yyyy-MM-dd HHmm format.
+     * @throws CherishException If either date/time string is invalid.
      */
-    // Constructor for user input
     public Event(String description, String fromStr, String toStr) throws CherishException {
         super(description);
-        try {
-            this.from = LocalDateTime.parse(fromStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-            this.to = LocalDateTime.parse(toStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-        } catch (DateTimeParseException e) {
-            throw new CherishException("Invalid date/time format!"
-                    + " Please use 'yyyy-MM-dd HHmm' for both start and end times.");
-        }
+        this.from = parseDateTime(fromStr);
+        this.to = parseDateTime(toStr);
     }
 
     /**
-     * Constructs an Event task from a description string and LocalDateTime objects for start and end.
-     * This constructor is typically used when loading tasks from a file.
+     * Constructs an Event task from stored data.
      *
-     * @param description The description of the event task.
-     * @param from The LocalDateTime object representing the start time.
-     * @param to The LocalDateTime object representing the end time.
-     * @throws CherishException If any required parameters are missing or invalid (not applicable here).
+     * @param description Description of the event.
+     * @param from Start date and time.
+     * @param to End date and time.
      */
-    // Constructor for loading from file
     public Event(String description, LocalDateTime from, LocalDateTime to) throws CherishException {
         super(description);
         this.from = from;
@@ -58,34 +55,51 @@ public class Event extends Task {
 
     @Override
     public String toString() {
-        String formattedFrom = from.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"));
-        String formattedTo = to.format(DateTimeFormatter.ofPattern("MMM dd yyyy HHmm"));
         return super.toString()
-                + " (from: " + formattedFrom + " to: " + formattedTo + ")";
+                + " (from: "
+                + from.format(DISPLAY_FORMATTER)
+                + " to: "
+                + to.format(DISPLAY_FORMATTER)
+                + ")";
     }
 
     @Override
     public String toFileString() {
-        String savedFrom = from.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-        String savedTo = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + savedFrom + " | " + savedTo;
+        return "E | "
+                + (isDone ? "1" : "0")
+                + " | "
+                + description
+                + " | "
+                + from.format(INPUT_FORMATTER)
+                + " | "
+                + to.format(INPUT_FORMATTER);
     }
 
     /**
-     * Gets the start date and time of the event.
-     *
-     * @return The LocalDateTime object representing the start time.
+     * Returns the start date and time of the event.
      */
     public LocalDateTime getFrom() {
         return from;
     }
 
     /**
-     * Gets the end date and time of the event.
-     *
-     * @return The LocalDateTime object representing the end time.
+     * Returns the end date and time of the event.
      */
     public LocalDateTime getTo() {
         return to;
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    private static LocalDateTime parseDateTime(String dateTimeStr) throws CherishException {
+        try {
+            return LocalDateTime.parse(dateTimeStr, INPUT_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new CherishException(
+                    "Invalid date/time format! Please use 'yyyy-MM-dd HHmm'."
+            );
+        }
     }
 }

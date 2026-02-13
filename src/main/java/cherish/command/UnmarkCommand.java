@@ -8,10 +8,12 @@ import cherish.ui.Ui;
 
 /**
  * Command to mark a task as not completed based on its index in the task list.
- * Validates the index and checks if the task is already unmarked.
+ * Validates the index and ensures the task is currently marked as done.
  */
 public class UnmarkCommand extends Command {
-    private int index;
+
+    private final int index;
+
     /**
      * Constructs an UnmarkCommand with the specified task index.
      *
@@ -23,29 +25,39 @@ public class UnmarkCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        // Validate index
+        Task task = getValidTask(tasks);
+
+        tasks.markAsNotDone(index);
+        saveTasks(storage, tasks);
+
+        return buildMessage(task);
+    }
+
+    /* =========================
+       Helper methods
+       ========================= */
+
+    /** Validates the index and ensures the task can be unmarked. */
+    private Task getValidTask(TaskList tasks) throws CherishException {
         if (index < 0 || index >= tasks.size()) {
             throw new CherishException("Task number out of range! You have " + tasks.size() + " task(s).");
         }
 
         Task task = tasks.get(index);
-
-        // Check if already unmarked
         if (!task.isDone()) {
             throw new CherishException("This task is already marked as not done!");
         }
 
-        // Unmark the task
-        tasks.markAsNotDone(index);
+        return task;
+    }
 
-        // Save updated list to file
-        try {
-            storage.save(tasks.toArray());
-        } catch (CherishException e) {
-            throw new CherishException("Failed to update task file after unmarking.");
-        }
+    /** Saves the current task list to persistent storage. */
+    private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
+        storage.save(tasks.toArray());
+    }
 
-        // Return success message
+    /** Builds a user-friendly success message. */
+    private String buildMessage(Task task) {
         return "OK! I've marked this task as not done:\n  " + task;
     }
 }
