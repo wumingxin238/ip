@@ -1,5 +1,6 @@
 package cherish.command;
 
+import cherish.CherishException;
 import cherish.model.TaskList;
 import cherish.storage.Storage;
 import cherish.ui.Ui;
@@ -19,5 +20,10 @@ public class ByeCommand extends Command {
     @Override
     public boolean isExit() {
         return true;
+    }
+
+    @Override
+    public boolean isUndoable() {
+        return false;
     }
 }

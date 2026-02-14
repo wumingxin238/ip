@@ -44,6 +44,17 @@ public class DeadlineCommand extends Command {
         return buildSuccessMessage(deadline, tasks.size());
     }
 
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        // Since DeadlineCommand always adds a task to the end of the list,
+        // undoing means removing the last task added.
+        Deadline removedDeadline = (Deadline) tasks.pop(); // Cast because pop returns Task
+
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(removedDeadline, tasks.size());
+    }
+
     /* =========================
        Helper methods
        ========================= */
@@ -69,5 +80,11 @@ public class DeadlineCommand extends Command {
                 + taskCount
                 + (taskCount == 1 ? " task" : " tasks")
                 + " in your list.";
+    }
+
+    private String buildUndoMessage(Deadline deadline, int taskCount) {
+        return "Great! You have undone adding this task:\n  " + deadline
+                + "\nNow you have " + taskCount
+                + (taskCount == 1 ? " task" : " tasks") + " in your list.";
     }
 }

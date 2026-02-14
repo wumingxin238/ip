@@ -26,4 +26,9 @@ public class FindDateCommand extends Command {
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
         return tasks.findTasksOnDate(dateString);
     }
+
+    @Override
+    public boolean isUndoable() {
+        return false;
+    }
 }

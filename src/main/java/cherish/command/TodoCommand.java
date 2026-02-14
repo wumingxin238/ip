@@ -33,6 +33,17 @@ public class TodoCommand extends Command {
         return buildMessage(todo, tasks);
     }
 
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        // Since TodoCommand always adds a task to the end of the list,
+        // undoing means removing the last task added.
+        Todo removedTodo = (Todo) tasks.pop(); // Cast because pop returns Task, but we know it was a Todo
+
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(removedTodo, tasks.size());
+    }
+
     /* =========================
        Helper methods
        ========================= */
@@ -47,5 +58,11 @@ public class TodoCommand extends Command {
         return "Got it! I've added this task:\n  " + todo
                 + "\nNow you have " + tasks.size()
                 + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+    }
+
+    private String buildUndoMessage(Todo todo, int taskCount) {
+        return "Great! You have undone adding this task:\n  " + todo
+                + "\nNow you have " + taskCount
+                + (taskCount == 1 ? " task" : " tasks") + " in your list.";
     }
 }

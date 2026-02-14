@@ -7,6 +7,7 @@ import java.time.format.DateTimeParseException;
 import cherish.CherishException;
 import cherish.model.Event;
 import cherish.model.TaskList;
+import cherish.model.Todo;
 import cherish.storage.Storage;
 import cherish.ui.Ui;
 
@@ -50,6 +51,17 @@ public class EventCommand extends Command {
         return buildSuccessMessage(event, tasks.size());
     }
 
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        // Since EventCommand always adds a task to the end of the list,
+        // undoing means removing the last task added.
+        Event removedEvent = (Event) tasks.pop(); // Cast because pop returns Task, but we know it was an Event
+
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(removedEvent, tasks.size());
+    }
+
     /* =========================
        Helper methods
        ========================= */
@@ -82,5 +94,11 @@ public class EventCommand extends Command {
                 + taskCount
                 + (taskCount == 1 ? " task" : " tasks")
                 + " in your list.";
+    }
+
+    private String buildUndoMessage(Event event, int taskCount) {
+        return "Great! You have undone adding this task:\n  " + event
+                + "\nNow you have " + taskCount
+                + (taskCount == 1 ? " task" : " tasks") + " in your list.";
     }
 }

@@ -58,7 +58,37 @@ public class TaskList {
                         + oldSize + ", New size: " + tasks.size();
     }
 
-    public Task get(int index) {
+    /**
+     * Adds a task at the specified index.
+     *
+     * @param index Position to insert the task (0 to size inclusive).
+     * @param task Task to be added.
+     * @throws CherishException If index is out of bounds.
+     */
+    public void addByIndex(int index, Task task) throws CherishException {
+        if (index < 0 || index > tasks.size()) {
+            throw new CherishException(
+                    "Index out of bounds: " + index + ". Valid range is 0 to " + tasks.size()
+            );
+        }
+
+        rebuildListWithInsertedTask(index, task);
+    }
+
+    /**
+     * Removes and returns the last task from the task list.
+     * @return The removed Task.
+     * @throws CherishException If the task list is empty.
+     */
+    public Task pop() throws CherishException {
+        if (tasks.isEmpty()) {
+            throw new CherishException("Cannot pop from an empty task list.");
+        }
+        Task removedTask = tasks.remove(tasks.size() - 1);
+        return removedTask;
+    }
+
+    public Task getByIndex(int index) {
         assert index >= 0 && index < tasks.size() : "Index out of bounds in TaskList.get: "
                 + index + ". Size is: " + tasks.size();
         return tasks.get(index);
@@ -199,4 +229,20 @@ public class TaskList {
 
         return false;
     }
+
+    private void rebuildListWithInsertedTask(int index, Task task) {
+        List<Task> updatedTasks =
+                java.util.stream.IntStream.range(0, tasks.size() + 1)
+                        .mapToObj(i -> {
+                            if (i == index) {
+                                return task;
+                            }
+                            return tasks.get(i < index ? i : i - 1);
+                        })
+                        .toList();
+
+        tasks.clear();
+        tasks.addAll(updatedTasks);
+    }
+
 }

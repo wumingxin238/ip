@@ -31,4 +31,9 @@ public class FindCommand extends Command {
     public boolean isExit() {
         return false; // Find command does not terminate the program
     }
+
+    @Override
+    public boolean isUndoable() {
+        return false;
+    }
 }

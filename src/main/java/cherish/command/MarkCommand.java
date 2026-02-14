@@ -24,21 +24,52 @@ public class MarkCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        validateIndex(tasks);
+        Task task = getValidTaskForMark(tasks);
 
         tasks.markAsDone(index);
-        Task markedTask = tasks.get(index);
-
         saveTasks(storage, tasks);
 
-        return "Great! I've marked this task as done:\n  " + markedTask;
+        return buildMessage(task);
+    }
+
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        Task task = getValidTaskForUndo(tasks);
+
+        tasks.markAsNotDone(index);
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(task);
     }
 
     /* =========================
        Helper methods
        ========================= */
 
-    private void validateIndex(TaskList tasks) throws CherishException {
+    /** Validates the task for a mark operation. */
+    private Task getValidTaskForMark(TaskList tasks) throws CherishException {
+        Task task = getTaskByIndex(tasks);
+
+        if (task.isDone()) {
+            throw new CherishException("This task is already marked as done!");
+        }
+
+        return task;
+    }
+
+    /** Validates the task for undoing a mark operation. */
+    private Task getValidTaskForUndo(TaskList tasks) throws CherishException {
+        Task task = getTaskByIndex(tasks);
+
+        if (!task.isDone()) {
+            throw new CherishException("This task is already marked as not done!");
+        }
+
+        return task;
+    }
+
+    /** Returns the task at index or throws if index is invalid. */
+    private Task getTaskByIndex(TaskList tasks) throws CherishException {
         if (index < 0 || index >= tasks.size()) {
             throw new CherishException(
                     "Task number out of range! You have "
@@ -46,9 +77,20 @@ public class MarkCommand extends Command {
                             + (tasks.size() == 1 ? " task." : " tasks.")
             );
         }
+        return tasks.getByIndex(index);
     }
 
     private void saveTasks(Storage storage, TaskList tasks) throws CherishException {
         storage.save(tasks.toArray());
+    }
+
+    /** Builds a user-friendly success message. */
+    private String buildMessage(Task task) {
+        return "Great! I've marked this task as done:\n  " + task;
+    }
+
+    /** Builds a user-friendly undo success message. */
+    private String buildUndoMessage(Task task) {
+        return "Great! I've undone marking this task as done:\n  " + task;
     }
 }

@@ -25,7 +25,7 @@ public class UnmarkCommand extends Command {
 
     @Override
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
-        Task task = getValidTask(tasks);
+        Task task = getValidTaskForUnmark(tasks);
 
         tasks.markAsNotDone(index);
         saveTasks(storage, tasks);
@@ -33,19 +33,37 @@ public class UnmarkCommand extends Command {
         return buildMessage(task);
     }
 
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        Task task = getValidTaskForUndo(tasks);
+
+        tasks.markAsDone(index);
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(task);
+    }
+
     /* =========================
        Helper methods
        ========================= */
 
-    /** Validates the index and ensures the task can be unmarked. */
-    private Task getValidTask(TaskList tasks) throws CherishException {
-        if (index < 0 || index >= tasks.size()) {
-            throw new CherishException("Task number out of range! You have " + tasks.size() + " task(s).");
-        }
+    /** Validates the task for an unmark operation. */
+    private Task getValidTaskForUnmark(TaskList tasks) throws CherishException {
+        Task task = getTaskByIndex(tasks);
 
-        Task task = tasks.get(index);
         if (!task.isDone()) {
             throw new CherishException("This task is already marked as not done!");
+        }
+
+        return task;
+    }
+
+    /** Validates the task for undoing an unmark operation. */
+    private Task getValidTaskForUndo(TaskList tasks) throws CherishException {
+        Task task = getTaskByIndex(tasks);
+
+        if (task.isDone()) {
+            throw new CherishException("This task is already marked as done!");
         }
 
         return task;
@@ -56,8 +74,23 @@ public class UnmarkCommand extends Command {
         storage.save(tasks.toArray());
     }
 
+    /** Returns the task at index or throws if index is invalid. */
+    private Task getTaskByIndex(TaskList tasks) throws CherishException {
+        if (index < 0 || index >= tasks.size()) {
+            throw new CherishException(
+                    "Task number out of range! You have " + tasks.size() + " task(s)."
+            );
+        }
+        return tasks.getByIndex(index);
+    }
+
     /** Builds a user-friendly success message. */
     private String buildMessage(Task task) {
         return "OK! I've marked this task as not done:\n  " + task;
+    }
+
+    /** Builds a user-friendly undo success message. */
+    private String buildUndoMessage(Task task) {
+        return "OK! I've undone marking this task as not done:\n  " + task;
     }
 }

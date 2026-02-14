@@ -1,7 +1,11 @@
 // src/main/java/cherish/Cherish.java
 package cherish;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import cherish.command.Command;
+import cherish.command.UndoCommand;
 import cherish.model.TaskList;
 import cherish.parser.Parser;
 import cherish.storage.Storage;
@@ -13,6 +17,7 @@ import cherish.ui.Ui;
  */
 public class Cherish {
     private static final String BYE_MESSAGE = "Bye. Hope to see you again soon!";
+    private final Deque<Command> commandHistory = new ArrayDeque<>();
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
@@ -45,32 +50,17 @@ public class Cherish {
      */
     public String getResponse(String input) {
         assert input != null : "Cherish.getResponse received a null input";
+
+        ui.getMessagesForGui();
+
         try {
-            // Clear any old messages from the UI buffer before processing
-            ui.getMessagesForGui();
-
-            // Parse the command
-            Command c = Parser.parse(input);
-            // Execute the command. The result will be sent to ui.showMessage/ui.showError internally.
-            String resultFromExecute = c.execute(tasks, ui, storage);
-
-            // If the command's execute method returns a string (e.g., for list, find),
-            // we should also send it to the UI for collection.
-            if (resultFromExecute != null && !resultFromExecute.isEmpty()) {
-                ui.showMessage(resultFromExecute);
-            }
-
-            // Get the collected messages from the UI instance
-            String response = ui.getMessagesForGui();
-            // Return the collected result for the GUI. Handle potential nulls gracefully.
-            return response != null ? response : "";
+            Command command = Parser.parse(input);
+            executeCommand(command);
+            return ui.getMessagesForGui();
 
         } catch (CherishException e) {
-            // Clear buffer first
             ui.getMessagesForGui();
-            // Send the error message to the UI (which will collect it)
             ui.showError(e.getMessage());
-            // Return the collected error message
             return ui.getMessagesForGui();
         }
     }
@@ -115,5 +105,39 @@ public class Cherish {
             }
         }
         ui.showBye();
+    }
+
+    /**
+     * Helper method for creating response
+     */
+    private void executeCommand(Command command) throws CherishException {
+        if (command instanceof UndoCommand) {
+            handleUndo();
+            return;
+        }
+
+        String result = command.execute(tasks, ui, storage);
+
+        if (command.isUndoable()) {
+            commandHistory.push(command);
+        }
+
+        if (result != null && !result.isEmpty()) {
+            ui.showMessage(result);
+        }
+    }
+
+    /**
+     * Helper method for undo
+     */
+    private void handleUndo() throws CherishException {
+        if (commandHistory.isEmpty()) {
+            ui.showMessage("Nothing to undo.");
+            return;
+        }
+
+        Command lastCommand = commandHistory.pop();
+        String response = lastCommand.undo(tasks, ui, storage);
+        ui.showMessage(response);
     }
 }

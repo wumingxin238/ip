@@ -11,6 +11,7 @@ import cherish.command.FindDateCommand;
 import cherish.command.ListCommand;
 import cherish.command.MarkCommand;
 import cherish.command.TodoCommand;
+import cherish.command.UndoCommand;
 import cherish.command.UnmarkCommand;
 
 /**
@@ -58,6 +59,8 @@ public class Parser {
             return parseFindDate(input);
         } else if (input.startsWith("find ")) {
             return parseFind(input);
+        } else if (input.equals("undo")) {
+            return new UndoCommand();
         } else {
             throw new CherishException(
                     "I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'find', etc."

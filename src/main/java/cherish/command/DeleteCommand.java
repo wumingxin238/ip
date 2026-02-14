@@ -1,5 +1,7 @@
 package cherish.command;
 
+import java.util.Stack;
+
 import cherish.CherishException;
 import cherish.model.Task;
 import cherish.model.TaskList;
@@ -13,6 +15,8 @@ public class DeleteCommand extends Command {
 
     private final int index;
 
+    private Task removedTask;
+    private int removedIndex;
     /**
      * Creates a DeleteCommand.
      *
@@ -26,12 +30,28 @@ public class DeleteCommand extends Command {
     public String execute(TaskList tasks, Ui ui, Storage storage) throws CherishException {
         validateIndex(tasks);
 
-        Task deletedTask = tasks.get(index);
+        Task deletedTask = tasks.getByIndex(index);
+        removedTask = deletedTask;
+        removedIndex = index;
         tasks.remove(index);
-
         saveTasks(storage, tasks);
 
         return buildSuccessMessage(deletedTask, tasks.size());
+    }
+
+    @Override
+    public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
+        // Check if execute was called successfully
+        if (removedTask == null) {
+            throw new CherishException("Cannot undo DeleteCommand: no task was removed during execution.");
+        }
+
+        // Re-add the stored task at its original index using the new method
+        tasks.addByIndex(removedIndex, removedTask);
+
+        saveTasks(storage, tasks);
+
+        return buildUndoMessage(removedTask, tasks.size());
     }
 
     /* =========================
@@ -53,6 +73,15 @@ public class DeleteCommand extends Command {
     private String buildSuccessMessage(Task deletedTask, int taskCount) {
         return "Noted! I've removed this task:\n  "
                 + deletedTask
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
+    }
+
+    private String buildUndoMessage(Task task, int taskCount) {
+        return "Great! You have undone removing this task:\n  "
+                + task
                 + "\nNow you have "
                 + taskCount
                 + (taskCount == 1 ? " task" : " tasks")
