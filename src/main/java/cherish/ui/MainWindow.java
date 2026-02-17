@@ -1,3 +1,4 @@
+// File: src/main/java/cherish/ui/MainWindow.java
 package cherish.ui;
 
 import cherish.Cherish;
@@ -18,6 +19,7 @@ public class MainWindow extends AnchorPane {
     private static final String USER_IMAGE_PATH = "/images/rabbit.png";
     private static final String CHERISH_IMAGE_PATH = "/images/pig.png";
     private static final String EXIT_KEYWORD = "bye.";
+    private static final String STYLESHEET_PATH = "/view/styles.css";
 
     // === FXML-injected fields ===
     @FXML
@@ -39,7 +41,15 @@ public class MainWindow extends AnchorPane {
 
     @FXML
     public void initialize() {
+        scrollPane.setFitToWidth(true);
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+
+        // Load the custom CSS stylesheet onto the dialogContainer instead of the main window
+        String stylesheet = getClass().getResource(STYLESHEET_PATH).toExternalForm();
+        System.out.println("Loading stylesheet onto dialogContainer: " + stylesheet);
+        dialogContainer.getStylesheets().add(stylesheet);
+        // Optional: Add a CSS class to the container itself if defined in styles.css
+        // dialogContainer.getStyleClass().add("dialog-container");
     }
 
     /**
@@ -78,7 +88,6 @@ public class MainWindow extends AnchorPane {
     private void showInitialMessages() {
         String initialMessages = cherish.getInitialMessages();
         if (initialMessages != null && !initialMessages.isBlank()) {
-            // Split lines, trim, filter out empty, and add to dialogContainer
             java.util.Arrays.stream(initialMessages.split("\n"))
                     .map(String::trim)
                     .filter(line -> !line.isEmpty())

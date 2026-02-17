@@ -27,6 +27,13 @@ public class Main extends Application {
             stage.setScene(scene);
             MainWindow controller = fxmlLoader.<MainWindow>getController();
             controller.setCherish(cherish);
+
+            stage.setWidth(480);
+            stage.setHeight(720);
+
+            stage.setMinWidth(360);
+            stage.setMinHeight(600);
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

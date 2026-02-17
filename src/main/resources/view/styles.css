@@ -1,0 +1,46 @@
+/* File: src/main/resources/view/styles.css */
+
+/* Style for user's dialog box */
+.user-dialog {
+    -fx-background-color: #d4edda; /* Light green background */
+    -fx-background-radius: 10; /* Rounded corners */
+    -fx-padding: 10; /* Internal padding */
+    -fx-alignment: center-left; /* Align content (label) to the left */
+}
+
+/* Style for Cherish's dialog box */
+.cherish-dialog {
+    -fx-background-color: #ffffff; /* White background */
+    -fx-background-radius: 10; /* Rounded corners */
+    -fx-padding: 10; /* Internal padding */
+    -fx-alignment: center-left; /* Align content (label) to the left */
+}
+
+/* Optional: Style the Label inside the dialog boxes if needed */
+.user-dialog .label {
+    -fx-text-fill: black; /* Ensure text is black */
+    -fx-wrap-text: true; /* Wrap text if necessary */
+    -fx-font-size: 14px; /* Adjust font size if desired */
+}
+
+.cherish-dialog .label {
+    -fx-text-fill: black; /* Ensure text is black */
+    -fx-wrap-text: true; /* Wrap text if necessary */
+    -fx-font-size: 14px; /* Adjust font size if desired */
+}
+
+/* Optional: Style the ImageView inside the dialog boxes if needed */
+.user-dialog .image-view,
+.cherish-dialog .image-view {
+    -fx-fit-width: 50; /* Adjust image size */
+    -fx-fit-height: 50;
+    -fx-preserve-ratio: true;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2); /* Subtle shadow */
+}
+
+/* Optional: Style the overall dialog container */
+.dialog-container {
+    -fx-spacing: 10; /* Space between dialog boxes */
+    -fx-padding: 10; /* Padding around the entire list of dialogs */
+    -fx-background-color: derive(-fx-base, 10%); /* Light background for the container */
+}
