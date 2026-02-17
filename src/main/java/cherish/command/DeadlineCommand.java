@@ -74,7 +74,7 @@ public class DeadlineCommand extends Command {
     }
 
     private String buildSuccessMessage(Deadline deadline, int taskCount) {
-        return "Got it! I've added this task:\n  "
+        return "All set! I've added this task for you:) \n  "
                 + deadline
                 + "\nNow you have "
                 + taskCount
@@ -83,7 +83,8 @@ public class DeadlineCommand extends Command {
     }
 
     private String buildUndoMessage(Deadline deadline, int taskCount) {
-        return "Great! You have undone adding this task:\n  " + deadline
+        return "No worries! I've undone adding this task \n  "
+                + deadline
                 + "\nNow you have " + taskCount
                 + (taskCount == 1 ? " task" : " tasks") + " in your list.";
     }

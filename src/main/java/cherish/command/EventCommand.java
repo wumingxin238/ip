@@ -88,7 +88,7 @@ public class EventCommand extends Command {
     }
 
     private String buildSuccessMessage(Event event, int taskCount) {
-        return "Got it! I've added this task:\n  "
+        return "Yay! I've added this event:) \n  "
                 + event
                 + "\nNow you have "
                 + taskCount
@@ -97,8 +97,11 @@ public class EventCommand extends Command {
     }
 
     private String buildUndoMessage(Event event, int taskCount) {
-        return "Great! You have undone adding this task:\n  " + event
-                + "\nNow you have " + taskCount
-                + (taskCount == 1 ? " task" : " tasks") + " in your list.";
+        return "Alright~ I've undone adding this event \n  "
+                + event
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 }

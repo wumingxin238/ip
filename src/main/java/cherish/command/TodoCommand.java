@@ -55,14 +55,20 @@ public class TodoCommand extends Command {
 
     /** Builds a user-friendly message for task addition. */
     private String buildMessage(Todo todo, TaskList tasks) {
-        return "Got it! I've added this task:\n  " + todo
-                + "\nNow you have " + tasks.size()
-                + (tasks.size() == 1 ? " task" : " tasks") + " in your list.";
+        return "All set! I've added this task for you:) \n  "
+                + todo
+                + "\nNow you have "
+                + tasks.size()
+                + (tasks.size() == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 
     private String buildUndoMessage(Todo todo, int taskCount) {
-        return "Great! You have undone adding this task:\n  " + todo
-                + "\nNow you have " + taskCount
-                + (taskCount == 1 ? " task" : " tasks") + " in your list.";
+        return "No worries! I've undone adding this task \n  "
+                + todo
+                + "\nNow you have "
+                + taskCount
+                + (taskCount == 1 ? " task" : " tasks")
+                + " in your list.";
     }
 }

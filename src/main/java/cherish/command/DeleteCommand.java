@@ -1,7 +1,5 @@
 package cherish.command;
 
-import java.util.Stack;
-
 import cherish.CherishException;
 import cherish.model.Task;
 import cherish.model.TaskList;
@@ -71,7 +69,7 @@ public class DeleteCommand extends Command {
     }
 
     private String buildSuccessMessage(Task deletedTask, int taskCount) {
-        return "Noted! I've removed this task:\n  "
+        return "Alright, I've removed this task for you \n  "
                 + deletedTask
                 + "\nNow you have "
                 + taskCount
@@ -80,7 +78,7 @@ public class DeleteCommand extends Command {
     }
 
     private String buildUndoMessage(Task task, int taskCount) {
-        return "Great! You have undone removing this task:\n  "
+        return "It's back! I've restored this task \n  "
                 + task
                 + "\nNow you have "
                 + taskCount

@@ -36,10 +36,8 @@ public class UnmarkCommand extends Command {
     @Override
     public String undo(TaskList tasks, Ui ui, Storage storage) throws CherishException {
         Task task = getValidTaskForUndo(tasks);
-
         tasks.markAsDone(index);
         saveTasks(storage, tasks);
-
         return buildUndoMessage(task);
     }
 
@@ -50,22 +48,22 @@ public class UnmarkCommand extends Command {
     /** Validates the task for an unmark operation. */
     private Task getValidTaskForUnmark(TaskList tasks) throws CherishException {
         Task task = getTaskByIndex(tasks);
-
         if (!task.isDone()) {
-            throw new CherishException("This task is already marked as not done!");
+            throw new CherishException(
+                    "Hmm~ this task is already not done "
+            );
         }
-
         return task;
     }
 
     /** Validates the task for undoing an unmark operation. */
     private Task getValidTaskForUndo(TaskList tasks) throws CherishException {
         Task task = getTaskByIndex(tasks);
-
         if (task.isDone()) {
-            throw new CherishException("This task is already marked as done!");
+            throw new CherishException(
+                    "Looks like this task is already done "
+            );
         }
-
         return task;
     }
 
@@ -86,11 +84,11 @@ public class UnmarkCommand extends Command {
 
     /** Builds a user-friendly success message. */
     private String buildMessage(Task task) {
-        return "OK! I've marked this task as not done:\n  " + task;
+        return "No problem! This task is marked as not done \n  " + task;
     }
 
     /** Builds a user-friendly undo success message. */
     private String buildUndoMessage(Task task) {
-        return "OK! I've undone marking this task as not done:\n  " + task;
+        return "Done! I've marked it as completed again \n  " + task;
     }
 }

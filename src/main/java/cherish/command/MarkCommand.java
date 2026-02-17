@@ -51,7 +51,9 @@ public class MarkCommand extends Command {
         Task task = getTaskByIndex(tasks);
 
         if (task.isDone()) {
-            throw new CherishException("This task is already marked as done!");
+            throw new CherishException(
+                    "Looks like this task is already done "
+            );
         }
 
         return task;
@@ -62,7 +64,9 @@ public class MarkCommand extends Command {
         Task task = getTaskByIndex(tasks);
 
         if (!task.isDone()) {
-            throw new CherishException("This task is already marked as not done!");
+            throw new CherishException(
+                    "Hmm~ this task is already not done "
+            );
         }
 
         return task;
@@ -86,11 +90,11 @@ public class MarkCommand extends Command {
 
     /** Builds a user-friendly success message. */
     private String buildMessage(Task task) {
-        return "Great! I've marked this task as done:\n  " + task;
+        return "Yay! This task is done:) \n  " + task;
     }
 
     /** Builds a user-friendly undo success message. */
     private String buildUndoMessage(Task task) {
-        return "Great! I've undone marking this task as done:\n  " + task;
+        return "That's okay - I've marked it as not done again \n  " + task;
     }
 }

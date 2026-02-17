@@ -9,7 +9,8 @@ import java.util.Scanner;
  * Supports both console and GUI modes.
  */
 public class Ui {
-    private static final String WELCOME_MSG = "Hello! I'm Cherish\nWhat can I do for you?";
+    private static final String WELCOME_MSG =
+            "Hello! I’m Cherish \nWhat can I help you with today?";
     private static final String BYE_MSG = "Bye. Hope to see you again soon!";
     private static final String LOADING_ERROR_MSG = "Warning: Could not load task data. Starting with empty list.";
     private static final String ERROR_PREFIX = "Oops! ";
