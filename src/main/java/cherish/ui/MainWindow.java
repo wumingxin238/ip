@@ -2,6 +2,7 @@
 package cherish.ui;
 
 import cherish.Cherish;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -9,6 +10,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  * Controller for the main GUI.
@@ -77,7 +80,9 @@ public class MainWindow extends AnchorPane {
         String response = cherish.getResponse(input);
         addCherishDialog(response);
 
-        checkExitCondition(response);
+        if (cherish.shouldExit()) {
+            handleExit();
+        }
 
         userInput.clear();
     }
@@ -108,11 +113,17 @@ public class MainWindow extends AnchorPane {
         }
     }
 
-    /** Checks if the response indicates exit, and disables input if so. */
-    private void checkExitCondition(String response) {
-        if (response != null && response.toLowerCase().contains(EXIT_KEYWORD)) {
-            userInput.setDisable(true);
-            sendButton.setDisable(true);
-        }
+    /** Helper Method */
+    private void handleExit() {
+        userInput.setDisable(true);
+        sendButton.setDisable(true);
+
+        PauseTransition delay = new PauseTransition(Duration.seconds(2));
+        delay.setOnFinished(event -> {
+            Stage stage = (Stage) userInput.getScene().getWindow();
+            stage.close();
+        });
+        delay.play();
     }
+
 }

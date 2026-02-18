@@ -21,6 +21,7 @@ public class Cherish {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
+    private boolean shouldExit = false;
 
     /**
      * Constructs a Cherish application instance for GUI mode.
@@ -32,6 +33,7 @@ public class Cherish {
     public Cherish(String filePath) {
         ui = new Ui(true); // Create UI in GUI mode
         storage = new Storage(filePath);
+        ui.showWelcome();
         try {
             tasks = new TaskList(storage.load());
         } catch (CherishException e) {
@@ -56,6 +58,7 @@ public class Cherish {
         try {
             Command command = Parser.parse(input);
             executeCommand(command);
+            shouldExit = command.isExit();
             return ui.getMessagesForGui();
 
         } catch (CherishException e) {
@@ -140,4 +143,9 @@ public class Cherish {
         String response = lastCommand.undo(tasks, ui, storage);
         ui.showMessage(response);
     }
+
+    public boolean shouldExit() {
+        return shouldExit;
+    }
+
 }
