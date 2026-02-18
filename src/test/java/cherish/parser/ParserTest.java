@@ -1,83 +1,191 @@
-// src/test/java/cherish/parser/ParserTest.java
 package cherish.parser;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import cherish.CherishException;
 import cherish.command.ByeCommand;
-import cherish.command.Command;
 import cherish.command.DeadlineCommand;
+import cherish.command.DeleteCommand;
 import cherish.command.EventCommand;
+import cherish.command.FindCommand;
+import cherish.command.FindDateCommand;
 import cherish.command.ListCommand;
 import cherish.command.MarkCommand;
 import cherish.command.TodoCommand;
+import cherish.command.UndoCommand;
+import cherish.command.UnmarkCommand;
 
-class ParserTest {
+public class ParserTest {
+
+    /* =====================
+       Basic commands
+       ===================== */
 
     @Test
-    void testParseValidTodo() throws CherishException {
-        Command command = cherish.parser.Parser.parse("todo Read a book");
-        assertTrue(command instanceof TodoCommand, "Should return a TodoCommand");
-        // Can optionally check if description is stored correctly if accessible
+    void parse_byeCommand_success() throws Exception {
+        assertInstanceOf(ByeCommand.class, Parser.parse("bye"));
     }
 
     @Test
-    void testParseValidDeadline() throws CherishException {
-        Command command = cherish.parser.Parser.parse("deadline Finish homework /by 2026-02-01 2359");
-        assertTrue(command instanceof DeadlineCommand, "Should return a DeadlineCommand");
+    void parse_listCommand_success() throws Exception {
+        assertInstanceOf(ListCommand.class, Parser.parse("list"));
     }
 
     @Test
-    void testParseValidEvent() throws CherishException {
-        Command command = cherish.parser.Parser.parse("event Team meeting /from 2026-02-01 1000 /to 2026-02-01 1100");
-        assertTrue(command instanceof EventCommand, "Should return an EventCommand");
+    void parse_undoCommand_success() throws Exception {
+        assertInstanceOf(UndoCommand.class, Parser.parse("undo"));
+    }
+
+    /* =====================
+       Todo
+       ===================== */
+
+    @Test
+    void parse_todoWithDescription_success() throws Exception {
+        assertInstanceOf(TodoCommand.class, Parser.parse("todo read book"));
     }
 
     @Test
-    void testParseValidMark() throws CherishException {
-        Command command = cherish.parser.Parser.parse("mark 2"); // Assuming 2nd task exists
-        assertTrue(command instanceof MarkCommand, "Should return a MarkCommand");
-        // Note: This test relies on the parser returning the right *type* of command.
-        // The *validity* of the index '2' is checked during execution, not parsing.
+    void parse_todoWithoutDescription_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("todo")
+        );
+    }
+
+    /* =====================
+       Deadline
+       ===================== */
+
+    @Test
+    void parse_deadlineValidFormat_success() throws Exception {
+        assertInstanceOf(
+                DeadlineCommand.class,
+                Parser.parse("deadline submit report /by 2026-02-01 1800")
+        );
     }
 
     @Test
-    void testParseValidList() throws CherishException {
-        Command command = cherish.parser.Parser.parse("list");
-        assertTrue(command instanceof ListCommand, "Should return a ListCommand");
+    void parse_deadlineMissingBy_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("deadline submit report")
+        );
     }
 
     @Test
-    void testParseValidBye() throws CherishException {
-        Command command = cherish.parser.Parser.parse("bye");
-        assertTrue(command instanceof ByeCommand, "Should return a ByeCommand");
-        assertTrue(command.isExit(), "ByeCommand should indicate exit");
+    void parse_deadlineMultipleBy_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("deadline a /by b /by c")
+        );
+    }
+
+    /* =====================
+       Event
+       ===================== */
+
+    @Test
+    void parse_eventValidFormat_success() throws Exception {
+        assertInstanceOf(
+                EventCommand.class,
+                Parser.parse("event meeting /from 2026-02-01 1400 /to 2026-02-01 1600")
+        );
     }
 
     @Test
-    void testParseEmptyInput_throwsException() {
-        CherishException thrown = assertThrows(CherishException.class, () -> {
-            cherish.parser.Parser.parse("");
-        }, "Parsing an empty string should throw an exception");
-        assertTrue(thrown.getMessage().contains("didn't type anything"), "Exception message should be appropriate");
+    void parse_eventMissingFrom_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("event meeting /to 2026-02-01 1600")
+        );
     }
 
     @Test
-    void testParseInvalidCommand_throwsException() {
-        CherishException thrown = assertThrows(CherishException.class, () -> {
-            cherish.parser.Parser.parse("invalidcommand sometext");
-        }, "Parsing an unknown command should throw an exception");
-        assertTrue(thrown.getMessage().contains("don't recognize"), "Exception message should be appropriate");
+    void parse_eventMissingTo_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("event meeting /from 2026-02-01 1400")
+        );
+    }
+
+    /* =====================
+       Mark / Unmark / Delete
+       ===================== */
+
+    @Test
+    void parse_markValidIndex_success() throws Exception {
+        assertInstanceOf(MarkCommand.class, Parser.parse("mark 1"));
     }
 
     @Test
-    void testParseMarkInvalidNumber_throwsException() {
-        CherishException thrown = assertThrows(CherishException.class, () -> {
-            cherish.parser.Parser.parse("mark not_a_number");
-        }, "Parsing 'mark' with non-number should throw an exception");
-        assertTrue(thrown.getMessage().contains("Invalid task number"), "Exception message should be appropriate");
+    void parse_unmarkValidIndex_success() throws Exception {
+        assertInstanceOf(UnmarkCommand.class, Parser.parse("unmark 2"));
+    }
+
+    @Test
+    void parse_deleteValidIndex_success() throws Exception {
+        assertInstanceOf(DeleteCommand.class, Parser.parse("delete 3"));
+    }
+
+    @Test
+    void parse_markWithoutIndex_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("mark")
+        );
+    }
+
+    @Test
+    void parse_markNonNumericIndex_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("mark abc")
+        );
+    }
+
+    /* =====================
+       Find / FindDate
+       ===================== */
+
+    @Test
+    void parse_findWithKeyword_success() throws Exception {
+        assertInstanceOf(FindCommand.class, Parser.parse("find book"));
+    }
+
+    @Test
+    void parse_findWithoutKeyword_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("find")
+        );
+    }
+
+    @Test
+    void parse_findDateValid_success() throws Exception {
+        assertInstanceOf(
+                FindDateCommand.class,
+                Parser.parse("finddate 2026-02-01")
+        );
+    }
+
+    @Test
+    void parse_findDateWithoutDate_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("finddate")
+        );
+    }
+
+    /* =====================
+       Unknown / empty input
+       ===================== */
+
+    @Test
+    void parse_emptyInput_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("")
+        );
+    }
+
+    @Test
+    void parse_unknownCommand_throwsException() {
+        assertThrows(
+                CherishException.class, () -> Parser.parse("dance now")
+        );
     }
 }

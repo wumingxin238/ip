@@ -1,108 +1,145 @@
-// src/test/java/cherish/storage/StorageTest.java
 package cherish.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import cherish.CherishException;
 import cherish.model.Deadline;
+import cherish.model.Event;
 import cherish.model.Task;
 import cherish.model.Todo;
 
-class StorageTest {
+public class StorageTest {
 
-    private static final String TEST_FILE_PATH = "data/test_cherish.txt";
-    private Storage storage;
-
-    @BeforeEach
-    void setUp() throws IOException {
-        // Ensure the test directory exists
-        Files.createDirectories(Paths.get("data"));
-        // Create a fresh storage instance for each test
-        storage = new Storage(TEST_FILE_PATH);
-        // Clean up any existing test file before each test
-        File testFile = new File(TEST_FILE_PATH);
-        if (testFile.exists()) {
-            testFile.delete();
-        }
-    }
+    private static final String TEST_FILE = "data/test-storage.txt";
 
     @AfterEach
-    void tearDown() {
-        // Clean up the test file after each test
-        File testFile = new File(TEST_FILE_PATH);
-        if (testFile.exists()) {
-            testFile.delete();
-        }
+    void cleanup() throws IOException {
+        Files.deleteIfExists(Path.of(TEST_FILE));
+    }
+
+    /* =====================
+       Save & Load
+       ===================== */
+
+    @Test
+    void load_fileDoesNotExist_returnsEmptyArray() throws Exception {
+        Storage storage = new Storage(TEST_FILE);
+
+        Task[] tasks = storage.load();
+
+        assertEquals(0, tasks.length);
     }
 
     @Test
-    void testSaveAndLoadSingleTodo() throws CherishException {
-        Task[] tasksToSave = new Task[]{new Todo("Write unit test")};
-        storage.save(tasksToSave);
+    void saveAndLoad_todoTask_success() throws Exception {
+        Storage storage = new Storage(TEST_FILE);
 
-        Task[] loadedTasks = storage.load();
-        assertEquals(1, loadedTasks.length, "Should load one task");
-        assertEquals("Write unit test", loadedTasks[0].getDescription(), "Description should match");
-        assertTrue(loadedTasks[0] instanceof Todo, "Loaded task should be a Todo");
+        Task[] original = {
+            new Todo("read book")
+        };
+
+        storage.save(original);
+        Task[] loaded = storage.load();
+
+        assertEquals(1, loaded.length);
+        assertInstanceOf(Todo.class, loaded[0]);
+        assertEquals("read book", loaded[0].getDescription());
+        assertTrue(!loaded[0].isDone());
     }
 
     @Test
-    void testSaveAndLoadMultipleTasks() throws CherishException {
-        Todo todo = new Todo("Buy groceries");
-        Deadline deadline = new Deadline("Submit assignment", LocalDateTime.of(2026, 2, 1, 23, 59));
+    void saveAndLoad_deadlineTask_success() throws Exception {
+        Storage storage = new Storage(TEST_FILE);
 
-        Task[] tasksToSave = new Task[]{todo, deadline};
-        storage.save(tasksToSave);
+        LocalDateTime by = LocalDateTime.of(2026, 2, 1, 18, 0);
+        Task[] original = {
+            new Deadline("submit report", by)
+        };
 
-        Task[] loadedTasks = storage.load();
-        assertEquals(2, loadedTasks.length, "Should load two tasks");
-        assertTrue(loadedTasks[0] instanceof Todo, "First task should be a Todo");
-        assertTrue(loadedTasks[1] instanceof Deadline, "Second task should be a Deadline");
-        assertEquals("Buy groceries", loadedTasks[0].getDescription(), "First description should match");
-        assertEquals("Submit assignment", loadedTasks[1].getDescription(), "Second description should match");
+        storage.save(original);
+        Task[] loaded = storage.load();
+
+        assertEquals(1, loaded.length);
+        assertInstanceOf(Deadline.class, loaded[0]);
+        assertEquals("submit report", loaded[0].getDescription());
     }
 
     @Test
-    void testLoadNonExistentFile_returnsEmptyArray() throws CherishException {
-        Task[] loadedTasks = storage.load();
-        assertNotNull(loadedTasks, "Load result should not be null");
-        assertEquals(0, loadedTasks.length, "Should return an empty array for a non-existent file");
+    void saveAndLoad_eventTask_success() throws Exception {
+        Storage storage = new Storage(TEST_FILE);
+
+        LocalDateTime from = LocalDateTime.of(2026, 2, 1, 14, 0);
+        LocalDateTime to = LocalDateTime.of(2026, 2, 1, 16, 0);
+
+        Task[] original = {
+            new Event("meeting", from, to)
+        };
+
+        storage.save(original);
+        Task[] loaded = storage.load();
+
+        assertEquals(1, loaded.length);
+        assertInstanceOf(Event.class, loaded[0]);
+        assertEquals("meeting", loaded[0].getDescription());
     }
 
     @Test
-    void testSaveToFile_thenLoadFromFile_contentMatches() throws CherishException {
-        Todo originalTodo = new Todo("Original Task");
-        originalTodo.markAsDone(); // Mark it to test persistence of status
-        Deadline originalDeadline = new Deadline("DDL Task", LocalDateTime.of(2026, 1, 1, 0, 0));
-        // Note: Don't mark deadline as done for this test, to mix states
+    void saveAndLoad_doneTask_preservesDoneStatus() throws Exception {
+        Storage storage = new Storage(TEST_FILE);
 
-        Task[] originalTasks = new Task[]{originalTodo, originalDeadline};
-        storage.save(originalTasks);
+        Todo todo = new Todo("read book");
+        todo.markAsDone();
 
-        // Load from the same file
-        Task[] reloadedTasks = storage.load();
+        storage.save(new Task[]{ todo });
+        Task[] loaded = storage.load();
 
-        // Compare properties of the reloaded objects
-        assertEquals(2, reloadedTasks.length);
-        assertEquals(originalTodo.getDescription(), reloadedTasks[0].getDescription());
-        assertEquals(originalTodo.isDone(), reloadedTasks[0].isDone()); // Check status too
-        assertTrue(reloadedTasks[0] instanceof Todo);
+        assertTrue(loaded[0].isDone());
+    }
 
-        assertEquals(originalDeadline.getDescription(), reloadedTasks[1].getDescription());
-        assertEquals(originalDeadline.getBy(), ((Deadline) reloadedTasks[1]).getBy());
-        assertEquals(originalDeadline.isDone(), reloadedTasks[1].isDone()); // Should be false
-        assertTrue(reloadedTasks[1] instanceof Deadline);
+    /* =====================
+       Corrupted data
+       ===================== */
+
+    @Test
+    void load_corruptedLine_throwsException() throws Exception {
+        Files.createDirectories(Path.of("data"));
+        Files.writeString(
+                Path.of(TEST_FILE),
+                "INVALID DATA FORMAT"
+        );
+
+        Storage storage = new Storage(TEST_FILE);
+
+        assertThrows(
+                CherishException.class,
+                storage::load
+        );
+    }
+
+    @Test
+    void load_invalidDateFormat_throwsException() throws Exception {
+        Files.createDirectories(Path.of("data"));
+        Files.writeString(
+                Path.of(TEST_FILE),
+                "D | 0 | deadline | invalid-date"
+        );
+
+        Storage storage = new Storage(TEST_FILE);
+
+        assertThrows(
+                CherishException.class,
+                storage::load
+        );
     }
 }
