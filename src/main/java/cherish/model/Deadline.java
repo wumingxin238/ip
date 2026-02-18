@@ -3,6 +3,7 @@ package cherish.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 import cherish.CherishException;
 
@@ -13,10 +14,10 @@ import cherish.CherishException;
 public class Deadline extends Task {
 
     private static final DateTimeFormatter INPUT_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm", Locale.ENGLISH);
 
     private static final DateTimeFormatter DISPLAY_FORMATTER =
-            DateTimeFormatter.ofPattern("MMM dd yyyy HHmm");
+            DateTimeFormatter.ofPattern("MMM dd yyyy HHmm", Locale.ENGLISH);
 
     private static final String FILE_DATE_PATTERN = "yyyy-MM-dd HHmm";
 
