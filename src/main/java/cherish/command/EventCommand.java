@@ -78,8 +78,8 @@ public class EventCommand extends Command {
     }
 
     private void validateTimeRange(LocalDateTime from, LocalDateTime to) throws CherishException {
-        if (from.isAfter(to)) {
-            throw new CherishException("Event start time cannot be after end time!");
+        if (!from.isBefore(to)) {
+            throw new CherishException("Event end time must be after start time.");
         }
     }
 

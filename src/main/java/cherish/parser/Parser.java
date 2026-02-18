@@ -15,17 +15,22 @@ import cherish.command.UndoCommand;
 import cherish.command.UnmarkCommand;
 
 /**
- * Parses user input commands and returns the corresponding Command object.
- * Handles various command formats and validates input where necessary.
+ * Parses raw user input strings into executable {@link Command} objects.
+ * The Parser is responsible for:
+ * Trimming and normalizing user input
+ * Validating command formats and required parameters
+ * Detecting missing, invalid, or duplicated parameters
+ * Throwing {@link CherishException} with user-friendly messages
+ * All command-format-related errors should be handled here and not deferred
+ * to command execution.
  */
 public class Parser {
 
     /**
-     * Parses the full user command string and returns the appropriate Command instance.
-     *
-     * @param fullCommand The raw command string entered by the user.
-     * @return A Command object representing the parsed instruction.
-     * @throws CherishException If the command is invalid, unrecognized, or missing required arguments.
+     * Parses the full user input and returns the corresponding {@link Command}.
+     * @param fullCommand Raw command string entered by the user.
+     * @return A {@link Command} object representing the user instruction.
+     * @throws CherishException If the input is empty, unrecognized, or malformed.
      */
     public static Command parse(String fullCommand) throws CherishException {
         if (fullCommand == null || fullCommand.trim().isEmpty()) {
@@ -34,21 +39,49 @@ public class Parser {
             );
         }
 
-        String input = fullCommand.trim();
+        // Normalize whitespace
+        String input = fullCommand.trim().replaceAll("\\s+", " ");
 
-        if (input.equals("bye")) {
+        switch (input) {
+        case "bye":
             return new ByeCommand();
-        } else if (input.equals("list")) {
+        case "list":
             return new ListCommand();
-        } else if (input.startsWith("mark ")) {
-            int index = parseIndex(input, "mark");
-            return new MarkCommand(index);
+        case "undo":
+            return new UndoCommand();
+        case "mark":
+            throw new CherishException("Please specify a task number. Usage: mark TASK_NUMBER");
+        case "unmark":
+            throw new CherishException("Please specify a task number. Usage: unmark TASK_NUMBER");
+        case "delete":
+            throw new CherishException("Please specify a task number. Usage: delete TASK_NUMBER");
+        case "todo":
+            throw new CherishException("The description of a todo cannot be empty. "
+                    + "Format: todo DESCRIPTION");
+        case "deadline":
+            throw new CherishException(
+                    "The description of a deadline cannot be empty. "
+                            + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm"
+            );
+        case "event":
+            throw new CherishException(
+                    "The description of an event cannot be empty. "
+                            + "Format: event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm"
+            );
+        case "find":
+            throw new CherishException("Please specify a keyword to search for!");
+        case "finddate":
+            throw new CherishException("Please specify a date! Usage: finddate yyyy-MM-dd");
+        default:
+            break;
+        }
+
+        if (input.startsWith("mark ")) {
+            return new MarkCommand(parseIndex(input, "mark"));
         } else if (input.startsWith("unmark ")) {
-            int index = parseIndex(input, "unmark");
-            return new UnmarkCommand(index);
+            return new UnmarkCommand(parseIndex(input, "unmark"));
         } else if (input.startsWith("delete ")) {
-            int index = parseIndex(input, "delete");
-            return new DeleteCommand(index);
+            return new DeleteCommand(parseIndex(input, "delete"));
         } else if (input.startsWith("todo ")) {
             return parseTodo(input);
         } else if (input.startsWith("deadline ")) {
@@ -59,29 +92,32 @@ public class Parser {
             return parseFindDate(input);
         } else if (input.startsWith("find ")) {
             return parseFind(input);
-        } else if (input.equals("undo")) {
-            return new UndoCommand();
         } else {
             throw new CherishException(
-                    "I don't recognize that command! Try 'todo', 'deadline', 'event', 'list', 'find', etc."
+                    "I don't recognize that command! "
+                            + "Try 'todo', 'deadline', 'event', 'list', 'find', etc."
             );
         }
     }
 
     /**
-     * Parses and validates the index for commands like 'mark', 'unmark', or 'delete'.
-     *
-     * @param input The full command string.
-     * @param commandName The command type (e.g., "mark").
-     * @return The 0-based index of the task.
-     * @throws CherishException If the index is invalid.
+     * Parses and validates a 1-based task index.
+     * @param input Full command string.
+     * @param commandName Name of the command (e.g. "mark").
+     * @return Zero-based task index.
+     * @throws CherishException If the index is missing or invalid.
      */
     private static int parseIndex(String input, String commandName) throws CherishException {
+        String numStr = input.substring(commandName.length()).trim();
+
+        if (numStr.contains(" ")) {
+            throw new CherishException("Please provide only one task number.");
+        }
+
         try {
-            String numStr = input.substring(commandName.length()).trim();
             int index = Integer.parseInt(numStr) - 1;
             if (index < 0) {
-                throw new CherishException("Task number must be positive.");
+                throw new CherishException("Task number must be a positive integer.");
             }
             return index;
         } catch (NumberFormatException e) {
@@ -92,30 +128,35 @@ public class Parser {
     }
 
     /**
-     * Parses a 'todo' command.
+     * Parses a {@code todo} command.
      *
-     * @param input The full command string.
-     * @return A TodoCommand object.
-     * @throws CherishException If description is missing.
+     * @param input Full command string.
+     * @return A {@link TodoCommand}.
+     * @throws CherishException If the description is missing.
      */
     private static Command parseTodo(String input) throws CherishException {
-        String desc = input.substring(5).trim(); // remove "todo "
+        String desc = input.substring("todo".length()).trim();
         if (desc.isEmpty()) {
-            throw new CherishException("The description of a todo cannot be empty.");
+            throw new CherishException("The description of a todo cannot be empty. "
+                    + "Format: TODO DESCRIPTION"
+            );
         }
         return new TodoCommand(desc);
     }
 
     /**
-     * Parses a 'deadline' command.
+     * Parses a {@code deadline} command.
+     * Format: {@code deadline DESCRIPTION /by yyyy-MM-dd HHmm}
      *
-     * Format: "deadline DESCRIPTION /by yyyy-MM-dd HHmm"
-     *
-     * @param input The full command string.
-     * @return A DeadlineCommand object.
-     * @throws CherishException If format or description/time is invalid.
+     * @param input Full command string.
+     * @return A {@link DeadlineCommand}.
+     * @throws CherishException If the format is invalid or parameters are missing.
      */
     private static Command parseDeadline(String input) throws CherishException {
+        if (input.indexOf(" /by ") != input.lastIndexOf(" /by ")) {
+            throw new CherishException("Deadline cannot have multiple /by.");
+        }
+
         String[] parts = input.split(" /by ", 2);
         if (parts.length != 2) {
             throw new CherishException(
@@ -123,61 +164,46 @@ public class Parser {
             );
         }
 
-        String descPart = parts[0].trim();
-        if (descPart.length() <= 9 || descPart.equalsIgnoreCase("deadline")) {
-            throw new CherishException(
-                    "The description of a deadline cannot be empty. "
-                            + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm"
-            );
-        }
-
-        String desc = descPart.substring(9).trim(); // remove "deadline "
+        String desc = parts[0].substring("deadline".length()).trim();
         String by = parts[1].trim();
 
         if (desc.isEmpty()) {
-            throw new CherishException(
-                    "The description of a deadline cannot be empty. "
-                            + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm"
-            );
+            throw new CherishException("The description of a deadline cannot be empty.");
         }
-
         if (by.isEmpty()) {
-            throw new CherishException(
-                    "The deadline time (/by ...) cannot be empty. "
-                            + "Format: deadline DESCRIPTION /by yyyy-MM-dd HHmm"
-            );
+            throw new CherishException("The deadline time (/by ...) cannot be empty.");
         }
 
         return new DeadlineCommand(desc, by);
     }
 
     /**
-     * Parses an 'event' command.
+     * Parses an {@code event} command.
+     * Format: {@code event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm}
      *
-     * Format: "event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm"
-     *
-     * @param input The full command string.
-     * @return An EventCommand object.
-     * @throws CherishException If format or times are invalid.
+     * @param input Full command string.
+     * @return An {@link EventCommand}.
+     * @throws CherishException If the format is invalid or parameters are missing.
      */
     private static Command parseEvent(String input) throws CherishException {
+        if (input.indexOf(" /from ") != input.lastIndexOf(" /from ")) {
+            throw new CherishException("Event cannot have multiple /from.");
+        }
+        if (input.indexOf(" /to ") != input.lastIndexOf(" /to ")) {
+            throw new CherishException("Event cannot have multiple /to.");
+        }
+
         String[] parts = input.split(" /from ", 2);
         if (parts.length != 2) {
             throw new CherishException(
-                    "Invalid event format! Use: event DESCRIPTION /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM"
+                    "Invalid event format! "
+                            + "Use: event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm"
             );
         }
 
-        String descPart = parts[0].trim();
-        if (descPart.length() <= 6 || descPart.equalsIgnoreCase("event")) {
-            throw new CherishException(
-                    "The description of an event cannot be empty. "
-                            + "Format: event DESCRIPTION /from yyyy-MM-dd HHmm /to yyyy-MM-dd HHmm"
-            );
-        }
-
-        String desc = descPart.substring(6).trim(); // remove "event "
+        String desc = parts[0].substring("event".length()).trim();
         String[] fromTo = parts[1].split(" /to ", 2);
+
         if (fromTo.length != 2) {
             throw new CherishException("Invalid event format! Missing '/to'.");
         }
@@ -187,7 +213,7 @@ public class Parser {
 
         if (desc.isEmpty() || from.isEmpty() || to.isEmpty()) {
             throw new CherishException(
-                    "Event description, start, and end times cannot be empty."
+                    "Event description, start time, and end time cannot be empty."
             );
         }
 
@@ -195,32 +221,32 @@ public class Parser {
     }
 
     /**
-     * Parses a 'finddate' command.
+     * Parses a {@code finddate} command.
      *
-     * @param input The full command string.
-     * @return A FindDateCommand object.
-     * @throws CherishException If date string is empty.
+     * @param input Full command string.
+     * @return A {@link FindDateCommand}.
+     * @throws CherishException If the date is missing.
      */
     private static Command parseFindDate(String input) throws CherishException {
-        String dateStr = input.substring(9).trim(); // remove "finddate "
+        String dateStr = input.substring("finddate".length()).trim();
         if (dateStr.isEmpty()) {
-            throw new CherishException("Please specify a date! Usage: finddate yyyy-MM-dd");
+            throw new CherishException("Please specify a date! Example usage: finddate yyyy-MM-dd");
         }
         return new FindDateCommand(dateStr);
     }
 
     /**
-     * Parses a 'find' command.
+     * Parses a {@code find} command.
      *
-     * @param input The full command string.
-     * @return A FindCommand object.
-     * @throws CherishException If keyword is empty.
+     * @param input Full command string.
+     * @return A {@link FindCommand}.
+     * @throws CherishException If the search keyword is missing.
      */
     private static Command parseFind(String input) throws CherishException {
-        String keyword = input.substring(5).trim(); // remove "find "
+        String keyword = input.substring("find".length()).trim();
         if (keyword.isEmpty()) {
             throw new CherishException(
-                    "Please specify a keyword to search for! Usage: find KEYWORD"
+                    "Please specify a keyword to search for! Example usage: find KEYWORD"
             );
         }
         return new FindCommand(keyword);
