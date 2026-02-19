@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
- * Controller for the main GUI.
+ * Controller for the main GUI window of the Cherish ChatBot application.
  */
 public class MainWindow extends AnchorPane {
 
@@ -42,23 +42,25 @@ public class MainWindow extends AnchorPane {
     private Image userImage = new Image(this.getClass().getResourceAsStream(USER_IMAGE_PATH));
     private Image cherishImage = new Image(this.getClass().getResourceAsStream(CHERISH_IMAGE_PATH));
 
+    /**
+     * Initializes the controller after its FXML elements have been loaded.
+     * Sets up auto-scrolling and loads the custom CSS stylesheet.
+     */
     @FXML
     public void initialize() {
         scrollPane.setFitToWidth(true);
+        // Binds scroll position to the bottom of the container for auto-scrolling
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
 
-        // Load the custom CSS stylesheet onto the dialogContainer instead of the main window
+        // Load the custom CSS stylesheet onto the dialogContainer to apply styles to chat bubbles
         String stylesheet = getClass().getResource(STYLESHEET_PATH).toExternalForm();
-        System.out.println("Loading stylesheet onto dialogContainer: " + stylesheet);
         dialogContainer.getStylesheets().add(stylesheet);
-        // Optional: Add a CSS class to the container itself if defined in styles.css
-        // dialogContainer.getStyleClass().add("dialog-container");
     }
 
     /**
-     * Injects the Cherish instance and displays initial messages.
+     * Injects the Cherish application instance and displays the initial welcome messages.
      *
-     * @param c Cherish application instance
+     * @param c The Cherish application instance.
      */
     public void setCherish(Cherish c) {
         cherish = c;
@@ -66,13 +68,14 @@ public class MainWindow extends AnchorPane {
     }
 
     /**
-     * Handles user input, displays it, gets Cherish's response, and displays that too.
+     * Handles the action triggered when the user sends input.
+     * Processes the command, displays user and bot responses, checks for exit, and clears input.
      */
     @FXML
     private void handleUserInput() {
         String input = userInput.getText().trim();
         if (input.isEmpty()) {
-            return;
+            return; // Ignore empty inputs
         }
 
         addUserDialog(input);
@@ -80,6 +83,7 @@ public class MainWindow extends AnchorPane {
         String response = cherish.getResponse(input);
         addCherishDialog(response);
 
+        // Check if the response signals an exit command
         if (cherish.shouldExit()) {
             handleExit();
         }
@@ -89,7 +93,9 @@ public class MainWindow extends AnchorPane {
 
     // === Private helper methods ===
 
-    /** Display initial messages from Cherish upon startup. */
+    /**
+     * Displays the initial welcome messages from Cherish.
+     */
     private void showInitialMessages() {
         String initialMessages = cherish.getInitialMessages();
         if (initialMessages != null && !initialMessages.isBlank()) {
@@ -101,23 +107,31 @@ public class MainWindow extends AnchorPane {
         }
     }
 
-    /** Adds a dialog box representing the user's input. */
+    /**
+     * Adds a dialog box representing the user's input to the display.
+     */
     private void addUserDialog(String input) {
         dialogContainer.getChildren().add(DialogBox.getUserDialog(input, userImage));
     }
 
-    /** Adds a dialog box representing Cherish's response. */
+    /**
+     * Adds a dialog box representing Cherish's response to the display.
+     */
     private void addCherishDialog(String response) {
         if (response != null && !response.isEmpty()) {
             dialogContainer.getChildren().add(DialogBox.getCherishDialog(response, cherishImage));
         }
     }
 
-    /** Helper Method */
+    /**
+     * Handles the application shutdown process.
+     * Disables UI elements and schedules the window to close after a delay.
+     */
     private void handleExit() {
         userInput.setDisable(true);
         sendButton.setDisable(true);
 
+        // Schedule the window to close after a 2-second delay
         PauseTransition delay = new PauseTransition(Duration.seconds(2));
         delay.setOnFinished(event -> {
             Stage stage = (Stage) userInput.getScene().getWindow();
