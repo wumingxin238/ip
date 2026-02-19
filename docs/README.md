@@ -6,9 +6,10 @@ Welcome to **Cherish**, a simple and intuitive chatbot designed to help you mana
 
 ## Getting Started
 
-1.  Launch the application. You should see the main window appear.
-2.  The chatbot will greet you with a welcome message: `Hello! I'm Cherish. What can I help you with today?`
-3.  Type your commands into the text field at the bottom of the window and press Enter or click the "Send" button.
+1. Ensure you have Java 17 installed. 
+2. Launch the application by double-clicking on the jar file or use java -jar Cherish,jar. You should see the main window appear.
+3. The chatbot will greet you with a welcome message: `Hello! I'm Cherish. What can I help you with today?`
+4. Type your commands into the text field at the bottom of the window and press Enter or click the "Send" button.
 
 ---
 
